@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-light: #E5E5E5;
+  --color-dark: #050505;
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(20, 20, 20, 0.6);
+}
+
+body {
+  font-family:
+    "Inter Variable",
+    ui-sans-serif,
+    system-ui,
+    sans-serif;
+  color: var(--color-light);
+  background-color: #050505;
+  /* Rich, deep background without "AI Blue" */
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(50, 50, 50, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 0% 100%, rgba(30, 30, 30, 0.1) 0%, transparent 30%);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.glass-card {
+  @apply bg-[#0A0A0A]/80 backdrop-blur-2xl border border-white/10 shadow-glass;
+}
+
+.premium-btn {
+  @apply bg-white text-black px-6 py-3 rounded-xl font-bold tracking-wide text-sm uppercase hover:bg-[#E5E5E5] transition-all active:scale-95 shadow-premium hover:shadow-premium-hover;
+}
+
+.auth-input-field {
+  @apply w-full px-4 py-3.5 rounded-xl bg-[#0F0F0F] border border-[#222] text-white focus:border-white/40 focus:bg-[#141414] focus:ring-0 outline-none transition-all placeholder:text-gray-600;
+}
+
+.auth-button {
+  @apply w-full px-4 py-3.5 rounded-xl bg-white text-black font-bold tracking-wide text-sm uppercase hover:bg-[#EAEAEA] transition-all shadow-lg active:scale-[0.98] disabled:opacity-50;
+}
