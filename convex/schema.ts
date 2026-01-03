@@ -67,7 +67,8 @@ const applicationTables = {
     breakTime: v.optional(v.number()),
     workingTime: v.optional(v.number()),
     leaveType: v.optional(v.union(v.literal("paid"), v.literal("sick"), v.literal("unpaid"), v.literal("personal"))),
-    status: v.optional(v.union(v.literal("present"), v.literal("absent"), v.literal("late"), v.literal("early"), v.literal("on_leave"))),
+    status: v.optional(v.union(v.literal("present"), v.literal("absent"), v.literal("late"), v.literal("early"), v.literal("on_leave"), v.literal("half-day"), v.literal("leave"))),
+    remarks: v.optional(v.string()),
   })
     .index("by_employee", ["employeeId"])
     .index("by_date", ["date"])

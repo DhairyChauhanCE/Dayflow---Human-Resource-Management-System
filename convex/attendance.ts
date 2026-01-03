@@ -23,7 +23,7 @@ export const getTodayAttendance = query({
 
     return await ctx.db
       .query("attendance")
-      .withIndex("by_employee_and_date", (q: any) =>
+      .withIndex("by_employee_date", (q: any) =>
         q.eq("employeeId", employee._id).eq("date", today)
       )
       .unique();
@@ -49,7 +49,7 @@ export const getAttendanceHistory = query({
 
     const query = ctx.db
       .query("attendance")
-      .withIndex("by_employee_and_date", (q: any) => q.eq("employeeId", targetEmployeeId));
+      .withIndex("by_employee_date", (q: any) => q.eq("employeeId", targetEmployeeId));
 
     const records = await query.collect();
 
@@ -77,7 +77,7 @@ export const checkIn = mutation({
 
     const existing = await ctx.db
       .query("attendance")
-      .withIndex("by_employee_and_date", (q: any) =>
+      .withIndex("by_employee_date", (q: any) =>
         q.eq("employeeId", employee._id).eq("date", today)
       )
       .unique();
@@ -112,7 +112,7 @@ export const checkOut = mutation({
 
     const attendance = await ctx.db
       .query("attendance")
-      .withIndex("by_employee_and_date", (q: any) =>
+      .withIndex("by_employee_date", (q: any) =>
         q.eq("employeeId", employee._id).eq("date", today)
       )
       .unique();
@@ -152,7 +152,7 @@ export const markAttendance = mutation({
 
     const existing = await ctx.db
       .query("attendance")
-      .withIndex("by_employee_and_date", (q: any) =>
+      .withIndex("by_employee_date", (q: any) =>
         q.eq("employeeId", args.employeeId).eq("date", args.date)
       )
       .unique();
@@ -242,7 +242,7 @@ export const fetchMonthlyAttendanceForEmployee = query({
 
     const records = await ctx.db
       .query("attendance")
-      .withIndex("by_employee_and_date", (q: any) =>
+      .withIndex("by_employee_date", (q: any) =>
         q.eq("employeeId", currentEmployee._id)
           .gte("date", startStr)
           .lte("date", endStr)
