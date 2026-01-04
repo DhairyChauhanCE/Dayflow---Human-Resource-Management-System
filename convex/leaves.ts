@@ -96,11 +96,17 @@ export const applyLeave = mutation({
   },
 });
 
+<<<<<<< HEAD
 export const approveLeave = mutation({
   args: {
     leaveId: v.id("leaveRequests"),
     status: v.union(v.literal("approved"), v.literal("rejected")),
     comments: v.optional(v.string())
+=======
+export const approveLeaveRequest = mutation({
+  args: {
+    requestId: v.id("leaveRequests"),
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
   },
   handler: async (ctx, args) => {
     const currentEmployee = await ctx.runQuery(api.employees.getCurrentEmployee);
@@ -108,6 +114,7 @@ export const approveLeave = mutation({
       throw new Error("Access denied");
     }
 
+<<<<<<< HEAD
     const leaveRequest = await ctx.db.get(args.leaveId);
     if (!leaveRequest) throw new Error("Leave request not found");
 
@@ -115,6 +122,14 @@ export const approveLeave = mutation({
       status: args.status,
       approvedBy: currentEmployee._id,
       approvalComments: args.comments
+=======
+    const leaveRequest = await ctx.db.get(args.requestId);
+    if (!leaveRequest) throw new Error("Leave request not found");
+
+    await ctx.db.patch(args.requestId, {
+      status: "approved",
+      approvedBy: currentEmployee._id,
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
     });
 
     // Create notification for employee
@@ -122,14 +137,21 @@ export const approveLeave = mutation({
     if (employee) {
       await ctx.db.insert("notifications", {
         recipientId: employee._id,
+<<<<<<< HEAD
         title: `Leave Request ${args.status}`,
         message: `Your ${leaveRequest.leaveType} leave request from ${leaveRequest.startDate} to ${leaveRequest.endDate} has been ${args.status}${args.comments ? `. Comments: ${args.comments}` : ''}`,
         type: args.status === "approved" ? "leave_approved" : "leave_rejected",
+=======
+        title: "Leave Request Approved",
+        message: `Your ${leaveRequest.leaveType} leave request from ${leaveRequest.startDate} to ${leaveRequest.endDate} has been approved`,
+        type: "leave_approved",
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
         read: false,
         createdAt: Date.now()
       });
     }
 
+<<<<<<< HEAD
     // If approved, mark attendance as leave for those dates
     if (args.status === "approved") {
       const startDate = new Date(leaveRequest.startDate);
@@ -156,5 +178,43 @@ export const approveLeave = mutation({
         }
       }
     }
+=======
+    return args.requestId;
+  },
+});
+
+export const rejectLeaveRequest = mutation({
+  args: {
+    requestId: v.id("leaveRequests"),
+  },
+  handler: async (ctx, args) => {
+    const currentEmployee = await ctx.runQuery(api.employees.getCurrentEmployee);
+    if (!currentEmployee || currentEmployee.role === "employee") {
+      throw new Error("Access denied");
+    }
+
+    const leaveRequest = await ctx.db.get(args.requestId);
+    if (!leaveRequest) throw new Error("Leave request not found");
+
+    await ctx.db.patch(args.requestId, {
+      status: "rejected",
+      approvedBy: currentEmployee._id,
+    });
+
+    // Create notification for employee
+    const employee = await ctx.db.get(leaveRequest.employeeId);
+    if (employee) {
+      await ctx.db.insert("notifications", {
+        recipientId: employee._id,
+        title: "Leave Request Rejected",
+        message: `Your ${leaveRequest.leaveType} leave request from ${leaveRequest.startDate} to ${leaveRequest.endDate} has been rejected`,
+        type: "leave_rejected",
+        read: false,
+        createdAt: Date.now()
+      });
+    }
+
+    return args.requestId;
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
   },
 });

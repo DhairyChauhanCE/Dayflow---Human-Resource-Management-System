@@ -89,6 +89,7 @@ export function SalarySlip({ payroll, employee }: SalarySlipProps) {
                             <div className="border-r border-slate-300">
                                 <div className="flex justify-between p-3 border-b border-slate-200">
                                     <span>Basic Salary</span>
+<<<<<<< HEAD
                                     <span>₹{breakdown.basic.toLocaleString('en-IN')}</span>
                                 </div>
                                 <div className="flex justify-between p-3 border-b border-slate-200">
@@ -106,6 +107,25 @@ export function SalarySlip({ payroll, employee }: SalarySlipProps) {
                                 <div className="flex justify-between p-3 font-bold bg-slate-50">
                                     <span>Total Earnings</span>
                                     <span>₹{(payroll.baseSalary + payroll.allowances).toLocaleString('en-IN')}</span>
+=======
+                                    <span>₹{breakdown.basic.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between p-3 border-b border-slate-200">
+                                    <span>HRA</span>
+                                    <span>₹{breakdown.hra.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between p-3 border-b border-slate-200">
+                                    <span>Conveyance</span>
+                                    <span>₹{breakdown.conveyance.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between p-3 border-b border-slate-200">
+                                    <span>Special Allowance</span>
+                                    <span>₹{breakdown.special.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between p-3 font-bold bg-slate-50">
+                                    <span>Total Earnings</span>
+                                    <span>₹{(payroll.baseSalary + payroll.allowances).toLocaleString()}</span>
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                                 </div>
                             </div>
 
@@ -113,6 +133,7 @@ export function SalarySlip({ payroll, employee }: SalarySlipProps) {
                             <div>
                                 <div className="flex justify-between p-3 border-b border-slate-200">
                                     <span>Income Tax</span>
+<<<<<<< HEAD
                                     <span>₹{breakdown.tax.toLocaleString('en-IN')}</span>
                                 </div>
                                 <div className="flex justify-between p-3 border-b border-slate-200">
@@ -122,6 +143,17 @@ export function SalarySlip({ payroll, employee }: SalarySlipProps) {
                                 <div className="flex justify-between p-3 border-b border-slate-200">
                                     <span>Other Deductions</span>
                                     <span>₹{Math.max(0, payroll.deductions - breakdown.tax - breakdown.pf).toLocaleString('en-IN')}</span>
+=======
+                                    <span>₹{breakdown.tax.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between p-3 border-b border-slate-200">
+                                    <span>Provident Fund</span>
+                                    <span>₹{breakdown.pf.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between p-3 border-b border-slate-200">
+                                    <span>Other Deductions</span>
+                                    <span>₹{Math.max(0, payroll.deductions - breakdown.tax - breakdown.pf).toLocaleString()}</span>
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                                 </div>
                                 <div className="flex justify-between p-3 opacity-0">
                                     <span>-</span>
@@ -129,7 +161,11 @@ export function SalarySlip({ payroll, employee }: SalarySlipProps) {
                                 </div>
                                 <div className="flex justify-between p-3 font-bold bg-slate-50">
                                     <span>Total Deductions</span>
+<<<<<<< HEAD
                                     <span>₹{payroll.deductions.toLocaleString('en-IN')}</span>
+=======
+                                    <span>₹{payroll.deductions.toLocaleString()}</span>
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                                 </div>
                             </div>
                         </div>
@@ -138,7 +174,11 @@ export function SalarySlip({ payroll, employee }: SalarySlipProps) {
                     {/* Net Pay */}
                     <div className="flex justify-between items-center p-4 bg-slate-100 border border-slate-300 mb-8">
                         <span className="text-xl font-bold uppercase">Net Payable</span>
+<<<<<<< HEAD
                         <span className="text-2xl font-bold">₹{payroll.netSalary.toLocaleString('en-IN')}</span>
+=======
+                        <span className="text-2xl font-bold">₹{payroll.netSalary.toLocaleString()}</span>
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                     </div>
 
                     {/* Footer */}

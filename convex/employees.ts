@@ -109,19 +109,31 @@ export const syncUserWithEmployee = mutation({
       .unique();
 
     if (idTaken) {
-      if (idTaken.userId && idTaken.userId !== userId) {
-        throw new Error("Employee ID already registered");
+      // If the email matches, allow "claiming" the record even if linked to another userId (or no userId)
+      // This is safe because we trust the authenticated email from the token
+      if (idTaken.email.toLowerCase() === args.email.toLowerCase()) {
+        await ctx.db.patch(idTaken._id, {
+          userId,
+          firstName: args.firstName || idTaken.firstName,
+          lastName: args.lastName || idTaken.lastName,
+          role: args.role
+        });
+        return idTaken._id;
       }
 
-      // If employee exists but not linked (or linked to self), update/link it
-      await ctx.db.patch(idTaken._id, {
-        userId,
-        // Update basic info if provided, but prioritize existing sensitive info from Admin
-        firstName: args.firstName || idTaken.firstName,
-        lastName: args.lastName || idTaken.lastName,
-        email: args.email || idTaken.email,
-        role: args.role // Allowing re-role on sync might be risky but needed for setup if Admin didn't set it right
-      });
+      // If it exists but email doesn't match, then it's a real conflict
+      if (idTaken.userId && idTaken.userId !== userId) {
+        throw new Error(`Employee ID ${args.employeeId} is already registered to another account.`);
+      }
+
+      // If no userId but email differs, still safer to block or update? 
+      // User entered the ID correctly but the email is different from what's on file.
+      if (idTaken.email.toLowerCase() !== args.email.toLowerCase()) {
+        throw new Error(`The email provided does not match the record for ${args.employeeId}. Please contact HR.`);
+      }
+
+      // Fallback: If it exists but has no userId, link it
+      await ctx.db.patch(idTaken._id, { userId, role: args.role });
       return idTaken._id;
     }
 
@@ -132,8 +144,8 @@ export const syncUserWithEmployee = mutation({
       firstName: args.firstName,
       lastName: args.lastName,
       email: args.email,
-      department: "General", // Default
-      position: args.role === "hr" ? "HR Manager" : "Employee", // Default
+      department: "General",
+      position: args.role === "hr" ? "HR Manager" : "Employee",
       hireDate: new Date().toISOString().split('T')[0],
       status: "active",
     });
@@ -165,13 +177,13 @@ export const updateEmployee = mutation({
       breakdown: v.object({
         basic: v.number(),
         hra: v.number(),
-        standardAllowance: v.number(),
-        performanceBonus: v.number(),
-        lta: v.number(),
-        fixedAllowance: v.number(),
+        standardAllowance: v.optional(v.number()),
+        performanceBonus: v.optional(v.number()),
+        lta: v.optional(v.number()),
+        fixedAllowance: v.optional(v.number()),
         pfEmployee: v.number(),
         pfEmployer: v.number(),
-        professionalTax: v.number(),
+        professionalTax: v.optional(v.number()),
       })
     })),
   },
@@ -203,5 +215,33 @@ export const updateEmployee = mutation({
     );
 
     await ctx.db.patch(employeeId, cleanUpdates);
+  },
+});
+
+export const updateLeaveAllocation = mutation({
+  args: {
+    employeeId: v.id("employees"),
+    paidDays: v.number(),
+    sickDays: v.number(),
+    personalDays: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const currentEmployee = await getLoggedInEmployee(ctx);
+    if (!currentEmployee || currentEmployee.role === "employee") {
+      throw new Error("Access denied");
+    }
+
+    const employee = await ctx.db.get(args.employeeId);
+    if (!employee) throw new Error("Employee not found");
+
+    await ctx.db.patch(args.employeeId, {
+      leaveBalances: {
+        paid: args.paidDays,
+        sick: args.sickDays,
+        personal: args.personalDays,
+      }
+    });
+
+    return args.employeeId;
   },
 });

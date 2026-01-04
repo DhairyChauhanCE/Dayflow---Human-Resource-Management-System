@@ -136,7 +136,11 @@ function SalaryReports({ onBack }: { onBack: () => void }) {
 
                             <div className="flex items-center gap-6">
                                 <div className="text-right">
+<<<<<<< HEAD
                                     <p className="text-white font-mono font-bold">₹{payroll.netSalary.toLocaleString('en-IN')}</p>
+=======
+                                    <p className="text-white font-mono font-bold">${payroll.netSalary.toLocaleString()}</p>
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                                     <p className="text-[10px] text-emerald-400 bg-emerald-400/10 px-2 rounded-full inline-block mt-1">{payroll.status}</p>
                                 </div>
 

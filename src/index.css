@@ -26,17 +26,28 @@ body {
 }
 
 .glass-card {
-  @apply bg-[#0A0A0A]/80 backdrop-blur-2xl border border-white/10 shadow-glass;
+  @apply bg-[#0A0A0A]/80 backdrop-blur-2xl border border-white/10;
+  box-shadow: 0px 8px 32px 0px rgba(0, 0, 0, 0.8);
 }
 
-.premium-btn {
-  @apply bg-white text-black px-6 py-3 rounded-xl font-bold tracking-wide text-sm uppercase hover:bg-[#E5E5E5] transition-all active:scale-95 shadow-premium hover:shadow-premium-hover;
+.text-gradient-workflow {
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-[#A855F7] via-[#D946EF] to-[#EC4899];
 }
 
-.auth-input-field {
-  @apply w-full px-4 py-3.5 rounded-xl bg-[#0F0F0F] border border-[#222] text-white focus:border-white/40 focus:bg-[#141414] focus:ring-0 outline-none transition-all placeholder:text-gray-600;
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
 
-.auth-button {
-  @apply w-full px-4 py-3.5 rounded-xl bg-white text-black font-bold tracking-wide text-sm uppercase hover:bg-[#EAEAEA] transition-all shadow-lg active:scale-[0.98] disabled:opacity-50;
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }

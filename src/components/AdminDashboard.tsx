@@ -2,8 +2,14 @@ import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { EmployeeManagement } from "./EmployeeManagement";
+<<<<<<< HEAD
 import { AttendanceManagement } from "./AttendanceManagement";
 import { LeaveManagement } from "./LeaveManagement";
+=======
+import { EnhancedAttendanceManagement } from "./EnhancedAttendanceManagement";
+import { TimeOffManagement } from "./TimeOffManagement";
+import { SalaryInformation } from "./SalaryInformation";
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
 import { PayrollManagement } from "./PayrollManagement";
 import { AnalyticsDashboard } from "./AnalyticsDashboard";
 import { ReportsDashboard } from "./ReportsDashboard";
@@ -26,7 +32,12 @@ export function AdminDashboard({ employee }: AdminDashboardProps) {
     { id: "analytics", label: "Analytics", icon: <BarChart3 size={18} /> },
     { id: "employees", label: "Employees", icon: <Users size={18} /> },
     { id: "attendance", label: "Attendance", icon: <Clock size={18} /> },
+<<<<<<< HEAD
     { id: "leaves", label: "Leaves", icon: <Palmtree size={18} /> },
+=======
+    { id: "leaves", label: "Time Off", icon: <Palmtree size={18} /> },
+    { id: "salary", label: "Salary", icon: <CreditCard size={18} /> },
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
     { id: "payroll", label: "Payroll", icon: <CreditCard size={18} /> },
     { id: "reports", label: "Reports", icon: <FileText size={18} /> },
   ];
@@ -160,8 +171,14 @@ export function AdminDashboard({ employee }: AdminDashboardProps) {
 
             {activeTab === "employees" && <EmployeeManagement employees={employees || []} />}
             {activeTab === "analytics" && <AnalyticsDashboard />}
+<<<<<<< HEAD
             {activeTab === "attendance" && <AttendanceManagement isAdmin={true} />}
             {activeTab === "leaves" && <LeaveManagement requests={leaveRequests || []} />}
+=======
+            {activeTab === "attendance" && <EnhancedAttendanceManagement />}
+            {activeTab === "leaves" && <TimeOffManagement />}
+            {activeTab === "salary" && <SalaryInformation />}
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
             {activeTab === "payroll" && <PayrollManagement />}
             {activeTab === "reports" && <ReportsDashboard />}
           </motion.div>

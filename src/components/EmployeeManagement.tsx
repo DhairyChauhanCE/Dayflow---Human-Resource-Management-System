@@ -4,7 +4,11 @@ import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, X } from "lucide-react";
+<<<<<<< HEAD
 import { ProfileCard } from "./ProfileCard";
+=======
+import { ProfileView } from "./ProfileView";
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
 
 interface EmployeeManagementProps {
   employees: any[];
@@ -226,7 +230,11 @@ export function EmployeeManagement({ employees }: EmployeeManagementProps) {
               >
                 <X size={20} />
               </button>
+<<<<<<< HEAD
               <ProfileCard employee={selectedEmployee} isAdminView={true} />
+=======
+              <ProfileView employee={selectedEmployee} isAdminView={true} />
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
             </motion.div>
           </div>
         )}

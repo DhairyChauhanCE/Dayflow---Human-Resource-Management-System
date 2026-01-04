@@ -4,11 +4,20 @@ import { api } from "../../convex/_generated/api";
 import { AttendanceCard } from "./AttendanceCard";
 import { LeaveRequestCard } from "./LeaveRequestCard";
 import { PayrollCard } from "./PayrollCard";
+<<<<<<< HEAD
 import { ProfileCard } from "./ProfileCard";
 import { NotificationBell } from "./NotificationBell";
 import { TimeOffView } from "./TimeOffView";
 import { motion, AnimatePresence } from "framer-motion";
 import { Home, Clock, Palmtree, CreditCard, User, LogOut, Bell, AlertCircle, Calendar } from "lucide-react";
+=======
+import { ProfileView } from "./ProfileView";
+import { AttendanceHistory } from "./AttendanceHistory";
+import { NotificationBell } from "./NotificationBell";
+import { EmployeeTimeOffRequest } from "./EmployeeTimeOffRequest";
+import { motion, AnimatePresence } from "framer-motion";
+import { Home, Clock, Palmtree, CreditCard, User, LogOut, Bell, AlertCircle } from "lucide-react";
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
 import { useAuthActions } from "@convex-dev/auth/react";
 
 interface EmployeeDashboardProps {
@@ -18,6 +27,10 @@ interface EmployeeDashboardProps {
 export function EmployeeDashboard({ employee }: EmployeeDashboardProps) {
   const { signOut } = useAuthActions();
   const [activeTab, setActiveTab] = useState("overview");
+<<<<<<< HEAD
+=======
+  const [isTimeOffModalOpen, setIsTimeOffModalOpen] = useState(false);
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
   const todayAttendance = useQuery(api.attendance.getTodayAttendance);
   const leaveRequests = useQuery(api.leaves.getMyLeaveRequests);
   const payrollRecords = useQuery(api.payroll.getMyPayroll);
@@ -26,7 +39,10 @@ export function EmployeeDashboard({ employee }: EmployeeDashboardProps) {
   const tabs = [
     { id: "overview", label: "Overview", icon: <Home size={18} /> },
     { id: "attendance", label: "Attendance", icon: <Clock size={18} /> },
+<<<<<<< HEAD
     { id: "timeoff", label: "Time Off", icon: <Calendar size={18} /> },
+=======
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
     { id: "leaves", label: "Leaves", icon: <Palmtree size={18} /> },
     { id: "payroll", label: "Payroll", icon: <CreditCard size={18} /> },
     { id: "profile", label: "Profile", icon: <User size={18} /> },
@@ -135,7 +151,13 @@ export function EmployeeDashboard({ employee }: EmployeeDashboardProps) {
                         <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/50 group-hover:bg-indigo-500 group-hover:text-white transition-all text-xs">→</div>
                       </button>
                       <button
+<<<<<<< HEAD
                         onClick={() => signOut()}
+=======
+                        onClick={() => {
+                          void signOut();
+                        }}
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                         className="w-full flex items-center gap-3 p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 hover:bg-rose-500 hover:text-white transition-all font-bold text-sm"
                       >
                         <LogOut size={20} />
@@ -147,6 +169,7 @@ export function EmployeeDashboard({ employee }: EmployeeDashboardProps) {
               </div>
             )}
 
+<<<<<<< HEAD
             {activeTab === "attendance" && (
               <AttendanceCard attendance={todayAttendance} detailed />
             )}
@@ -157,6 +180,23 @@ export function EmployeeDashboard({ employee }: EmployeeDashboardProps) {
 
             {activeTab === "leaves" && (
               <LeaveRequestCard requests={leaveRequests || []} detailed />
+=======
+            {activeTab === "attendance" && <AttendanceHistory />}
+
+            {activeTab === "leaves" && (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-semibold text-white">Leave Requests</h2>
+                  <button
+                    onClick={() => setIsTimeOffModalOpen(true)}
+                    className="premium-btn flex items-center gap-2"
+                  >
+                    NEW REQUEST
+                  </button>
+                </div>
+                <LeaveRequestCard requests={leaveRequests || []} detailed />
+              </div>
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
             )}
 
             {activeTab === "payroll" && (
@@ -164,11 +204,25 @@ export function EmployeeDashboard({ employee }: EmployeeDashboardProps) {
             )}
 
             {activeTab === "profile" && (
+<<<<<<< HEAD
               <ProfileCard employee={employee} />
+=======
+              <ProfileView employee={employee} />
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
             )}
           </motion.div>
         </AnimatePresence>
       </div>
+<<<<<<< HEAD
+=======
+
+      {/* Employee Time Off Request Modal */}
+      <EmployeeTimeOffRequest 
+        isOpen={isTimeOffModalOpen} 
+        onClose={() => setIsTimeOffModalOpen(false)} 
+        employee={employee}
+      />
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
     </div>
   );
 }

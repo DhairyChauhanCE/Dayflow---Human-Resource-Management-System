@@ -8,6 +8,10 @@ module.exports = {
       fontFamily: {
         sans: ["Inter var", ...fontFamily.sans],
         mono: ["Geist Mono", ...fontFamily.mono], // Suggesting a tech/premium mono font if available, or fallback
+<<<<<<< HEAD
+=======
+        handwriting: ["Caveat", "cursive"], // Adding handwriting font for attendance components
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
       },
       borderRadius: {
         DEFAULT: "8px",
@@ -45,6 +49,10 @@ module.exports = {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'metallic-gradient': 'linear-gradient(135deg, #374151 0%, #111827 50%, #000000 100%)',
         'subtle-gradient': 'linear-gradient(to bottom right, #1f2937, #111827)',
+<<<<<<< HEAD
+=======
+        'premium-gradient': 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)', // Adding premium gradient
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
       },
       animation: {
         'fade-in': 'fadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1)',

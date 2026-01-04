@@ -1,6 +1,10 @@
 # Dayflow HRMS - Complete Implementation
   
+<<<<<<< HEAD
 This is a project built with [Chef](https://chef.convex.dev) using [Convex](https://convex.dev) as its backend.
+=======
+This is a project built using [Convex](https://convex.dev) as its backend.
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
  You can find docs about Chef with useful information like how to deploy to production [here](https://docs.convex.dev/chef).
   
 This project is connected to the Convex deployment named [`marvelous-dogfish-256`](https://dashboard.convex.dev/d/marvelous-dogfish-256).

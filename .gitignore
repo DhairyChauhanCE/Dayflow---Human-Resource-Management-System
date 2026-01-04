@@ -24,7 +24,11 @@ dist-ssr
 *.sw?
 
 # Ignored for the template, you probably want to remove it:
+<<<<<<< HEAD
 # package-lock.json should be tracked
 # package-lock.json
 # Local Netlify folder
 .netlify
+=======
+package-lock.json
+>>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
