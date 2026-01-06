@@ -17,13 +17,13 @@ import type * as analytics from "../analytics.js";
 import type * as attendance from "../attendance.js";
 import type * as auth from "../auth.js";
 import type * as contact from "../contact.js";
+import type * as debug from "../debug.js";
 import type * as employees from "../employees.js";
 import type * as http from "../http.js";
 import type * as leaves from "../leaves.js";
 import type * as notifications from "../notifications.js";
 import type * as payroll from "../payroll.js";
 import type * as router from "../router.js";
-import type * as timeOff from "../timeOff.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -38,13 +38,13 @@ declare const fullApi: ApiFromModules<{
   attendance: typeof attendance;
   auth: typeof auth;
   contact: typeof contact;
+  debug: typeof debug;
   employees: typeof employees;
   http: typeof http;
   leaves: typeof leaves;
   notifications: typeof notifications;
   payroll: typeof payroll;
   router: typeof router;
-  timeOff: typeof timeOff;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

@@ -1,11 +1,17 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
-<<<<<<< HEAD
-=======
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 async function getLoggedInEmployee(ctx: any) {
+  // Try to use getCurrentEmployee if already defined in api.employees
+  try {
+    const employee = await ctx.runQuery(api.employees.getCurrentEmployee);
+    if (employee) return employee;
+  } catch (e) {
+    // Fallback to manual check if runQuery fails or not available in this context
+  }
+
   const userId = await getAuthUserId(ctx);
   if (!userId) return null;
 
@@ -14,28 +20,18 @@ async function getLoggedInEmployee(ctx: any) {
     .withIndex("by_user_id", (q: any) => q.eq("userId", userId))
     .unique();
 }
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
 
 export const getTodayAttendance = query({
   args: {},
   handler: async (ctx) => {
-<<<<<<< HEAD
-    const employee = await ctx.runQuery(api.employees.getCurrentEmployee);
-    if (!employee) throw new Error("Unauthorized");
-=======
     const employee = await getLoggedInEmployee(ctx);
     if (!employee) return null;
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
 
     const today = new Date().toISOString().split('T')[0];
 
     return await ctx.db
       .query("attendance")
-<<<<<<< HEAD
       .withIndex("by_employee_and_date", (q: any) =>
-=======
-      .withIndex("by_employee_date", (q: any) =>
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
         q.eq("employeeId", employee._id).eq("date", today)
       )
       .unique();
@@ -45,14 +41,13 @@ export const getTodayAttendance = query({
 export const getAttendanceHistory = query({
   args: {
     employeeId: v.optional(v.id("employees")),
-<<<<<<< HEAD
     date: v.optional(v.string()), // Specific date for Admin view
     startDate: v.optional(v.string()), // Format YYYY-MM-DD
     endDate: v.optional(v.string())    // Format YYYY-MM-DD
   },
   handler: async (ctx, args) => {
-    const currentEmployee = await ctx.runQuery(api.employees.getCurrentEmployee);
-    if (!currentEmployee) throw new Error("Unauthorized");
+    const currentEmployee = await getLoggedInEmployee(ctx);
+    if (!currentEmployee) return [];
 
     const isAdminOrHR = currentEmployee.role === "admin" || currentEmployee.role === "hr";
     let records = [];
@@ -73,22 +68,7 @@ export const getAttendanceHistory = query({
         throw new Error("Access denied");
       }
 
-      // If filtering by date range for a specific employee, use the index if possible or filter in memory
-      // Ideally we use an index, but we only have `by_employee_and_date` which supports equality on employee and range on date?
-      // Convex `eq` followed by `gte`/`lte` works on compound indexes if ordered correctly.
-      // Assuming `by_employee_and_date` is `['employeeId', 'date']`.
-
       if (args.startDate || args.endDate) {
-        let q = ctx.db
-          .query("attendance")
-          .withIndex("by_employee_and_date", (q: any) => q.eq("employeeId", targetEmployeeId));
-
-        if (args.startDate) q = q.filter((q: any) => q.gte(q.field("date"), args.startDate!));
-        if (args.endDate) q = q.filter((q: any) => q.lte(q.field("date"), args.endDate!));
-        // Note: .filter() is less efficient than index range but we need to verify schema index definition.
-        // If index is [employeeId, date], we can use range operators in withIndex?
-        // Actually `q.eq("employeeId", ...).gte("date", ...)` is valid in `withIndex` callback relative to index fields.
-
         records = await ctx.db
           .query("attendance")
           .withIndex("by_employee_and_date", (q: any) => {
@@ -110,60 +90,40 @@ export const getAttendanceHistory = query({
     const enrichedRecords = await Promise.all(
       records.map(async (record: any) => {
         const employee: any = await ctx.db.get(record.employeeId);
+        let imageUrl = null;
+        if (employee && employee.profilePicture) {
+          try {
+            imageUrl = await ctx.storage.getUrl(employee.profilePicture);
+          } catch (e) {
+            console.error("Error fetching storage URL:", e);
+          }
+        }
+
         return {
           ...record,
           employeeName: employee ? `${employee.firstName} ${employee.lastName}` : "Unknown",
           department: employee?.department || "Unknown",
           position: employee?.position || "Unknown",
-          profilePicture: employee?.profilePicture
+          profilePicture: employee?.profilePicture,
+          profilePictureUrl: imageUrl,
+          employee: employee ? {
+            firstName: employee.firstName || "Unknown",
+            lastName: employee.lastName || "",
+            department: employee.department || "N/A",
+            profilePictureUrl: imageUrl
+          } : null
         };
       })
     );
 
     return enrichedRecords.sort((a: any, b: any) => b.date.localeCompare(a.date));
-=======
-    startDate: v.optional(v.string()),
-    endDate: v.optional(v.string())
-  },
-  handler: async (ctx, args) => {
-    const currentEmployee = await getLoggedInEmployee(ctx);
-    if (!currentEmployee) return []; // Return empty list if not authed
-
-    const targetEmployeeId = args.employeeId || currentEmployee._id;
-
-    // Employees can only view their own attendance
-    if (currentEmployee.role === "employee" && targetEmployeeId !== currentEmployee._id) {
-      throw new Error("Access denied");
-    }
-
-    const query = ctx.db
-      .query("attendance")
-      .withIndex("by_employee_date", (q: any) => q.eq("employeeId", targetEmployeeId));
-
-    const records = await query.collect();
-
-    // Filter by date range if provided
-    if (args.startDate || args.endDate) {
-      return records.filter((record: any) => {
-        if (args.startDate && record.date < args.startDate) return false;
-        if (args.endDate && record.date > args.endDate) return false;
-        return true;
-      });
-    }
-
-    return records.sort((a: any, b: any) => b.date.localeCompare(a.date));
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
   },
 });
 
 export const checkIn = mutation({
   args: {},
   handler: async (ctx) => {
-<<<<<<< HEAD
-    const employee = await ctx.runQuery(api.employees.getCurrentEmployee);
-=======
     const employee = await getLoggedInEmployee(ctx);
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
     if (!employee) throw new Error("Unauthorized");
 
     const today = new Date().toISOString().split('T')[0];
@@ -171,11 +131,7 @@ export const checkIn = mutation({
 
     const existing = await ctx.db
       .query("attendance")
-<<<<<<< HEAD
       .withIndex("by_employee_and_date", (q: any) =>
-=======
-      .withIndex("by_employee_date", (q: any) =>
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
         q.eq("employeeId", employee._id).eq("date", today)
       )
       .unique();
@@ -202,11 +158,7 @@ export const checkIn = mutation({
 export const checkOut = mutation({
   args: {},
   handler: async (ctx) => {
-<<<<<<< HEAD
-    const employee = await ctx.runQuery(api.employees.getCurrentEmployee);
-=======
     const employee = await getLoggedInEmployee(ctx);
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
     if (!employee) throw new Error("Unauthorized");
 
     const today = new Date().toISOString().split('T')[0];
@@ -214,11 +166,7 @@ export const checkOut = mutation({
 
     const attendance = await ctx.db
       .query("attendance")
-<<<<<<< HEAD
       .withIndex("by_employee_and_date", (q: any) =>
-=======
-      .withIndex("by_employee_date", (q: any) =>
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
         q.eq("employeeId", employee._id).eq("date", today)
       )
       .unique();
@@ -247,26 +195,18 @@ export const markAttendance = mutation({
   args: {
     employeeId: v.id("employees"),
     date: v.string(),
-    status: v.union(v.literal("present"), v.literal("absent"), v.literal("half-day"), v.literal("leave")),
+    status: v.union(v.literal("present"), v.literal("absent"), v.literal("half-day"), v.literal("leave"), v.literal("on_leave")),
     remarks: v.optional(v.string())
   },
   handler: async (ctx, args) => {
-<<<<<<< HEAD
-    const currentEmployee = await ctx.runQuery(api.employees.getCurrentEmployee);
-=======
     const currentEmployee = await getLoggedInEmployee(ctx);
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
     if (!currentEmployee || currentEmployee.role === "employee") {
       throw new Error("Access denied");
     }
 
     const existing = await ctx.db
       .query("attendance")
-<<<<<<< HEAD
       .withIndex("by_employee_and_date", (q: any) =>
-=======
-      .withIndex("by_employee_date", (q: any) =>
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
         q.eq("employeeId", args.employeeId).eq("date", args.date)
       )
       .unique();
@@ -287,38 +227,27 @@ export const markAttendance = mutation({
   },
 });
 
-<<<<<<< HEAD
 export const getMonthlyAttendanceStats = query({
   args: {
-    employeeId: v.optional(v.id("employees")), // Optional so default can be current
+    employeeId: v.optional(v.id("employees")),
     month: v.number(), // 0-11
     year: v.number()
   },
   handler: async (ctx, args) => {
-    const currentEmployee = await ctx.runQuery(api.employees.getCurrentEmployee);
+    const currentEmployee = await getLoggedInEmployee(ctx);
     if (!currentEmployee) throw new Error("Unauthorized");
 
     const targetEmployeeId = args.employeeId || currentEmployee._id;
 
-    // Access Check
     if (currentEmployee.role !== "admin" && currentEmployee.role !== "hr" && targetEmployeeId !== currentEmployee._id) {
       throw new Error("Access denied");
     }
 
-    const start = new Date(args.year, args.month, 1);
-    const end = new Date(args.year, args.month + 1, 0); // Last day of month
-
-    // Format as YYYY-MM-DD
-    // Note: To avoid timezone issues, manually construct date strings if dealing with local time logic,
-    // but ISO string date part works for UTC. Assuming all dates stored as YYYY-MM-DD.
-    // However, JS Date(y,m,1) creates local time. toISOString() converts to UTC.
-    // Better to use manual formatting:
     const pad = (n: number) => n.toString().padStart(2, '0');
     const startDate = `${args.year}-${pad(args.month + 1)}-01`;
     const lastDay = new Date(args.year, args.month + 1, 0).getDate();
     const endDate = `${args.year}-${pad(args.month + 1)}-${pad(lastDay)}`;
 
-    // Fetch attendance between range
     const attendance = await ctx.db
       .query("attendance")
       .withIndex("by_employee_and_date", (q: any) =>
@@ -326,7 +255,6 @@ export const getMonthlyAttendanceStats = query({
       )
       .collect();
 
-    // Calculate stats
     let present = 0;
     let absent = 0;
     let halfDays = 0;
@@ -336,10 +264,9 @@ export const getMonthlyAttendanceStats = query({
       if (record.status === "present") present++;
       else if (record.status === "absent") absent++;
       else if (record.status === "half-day") halfDays++;
-      else if (record.status === "leave") leaves++;
+      else if (record.status === "leave" || record.status === "on_leave") leaves++;
     });
 
-    // Payable Days Calculation: Present + Leaves + (HalfDay * 0.5)
     const payableDays = present + leaves + (halfDays * 0.5);
 
     return {
@@ -349,14 +276,15 @@ export const getMonthlyAttendanceStats = query({
       leaves,
       payableDays
     };
-=======
-// Admin: Get all attendance for a specific date
+  },
+});
+
 export const fetchDailyAttendanceForAdmin = query({
   args: { date: v.string() },
   handler: async (ctx, args) => {
     const currentEmployee = await getLoggedInEmployee(ctx);
     if (!currentEmployee || currentEmployee.role === "employee") {
-      return null; // Return null instead of throwing
+      return null;
     }
 
     const attendanceRecords = await ctx.db
@@ -364,7 +292,6 @@ export const fetchDailyAttendanceForAdmin = query({
       .withIndex("by_date", (q: any) => q.eq("date", args.date))
       .collect();
 
-    // Join with Employee details
     if (!attendanceRecords || attendanceRecords.length === 0) return [];
 
     const recordsWithEmployee = await Promise.all(
@@ -396,7 +323,6 @@ export const fetchDailyAttendanceForAdmin = query({
   }
 });
 
-// Employee: Get monthly attendance for themselves
 export const fetchMonthlyAttendanceForEmployee = query({
   args: { year: v.number(), month: v.number() },
   handler: async (ctx, args) => {
@@ -404,22 +330,14 @@ export const fetchMonthlyAttendanceForEmployee = query({
     if (!currentEmployee) return null;
 
     const startOfMonth = new Date(args.year, args.month - 1, 1);
-    const endOfMonth = new Date(args.year, args.month, 0); // Last day of month
+    const endOfMonth = new Date(args.year, args.month, 0);
 
-    // Format to YYYY-MM-DD for string comparison
-    // Note: This relies on the "date" field being YYYY-MM-DD string as established
     const startStr = startOfMonth.toISOString().split('T')[0];
     const endStr = endOfMonth.toISOString().split('T')[0];
 
-    // We can't range query easily on string date without a specific index for it combined with employee
-    // But we have `by_employee_and_date`.
-    // Range queries on the second field of an index are generally efficient in Convex if the first is precise.
-    // Let's verify index: .index("by_employee_and_date", ["employeeId", "date"])
-    // Yes, q.eq("employeeId", ...).gte("date", ...).lte("date", ...) works perfectly.
-
     const records = await ctx.db
       .query("attendance")
-      .withIndex("by_employee_date", (q: any) =>
+      .withIndex("by_employee_and_date", (q: any) =>
         q.eq("employeeId", currentEmployee._id)
           .gte("date", startStr)
           .lte("date", endStr)
@@ -427,6 +345,6 @@ export const fetchMonthlyAttendanceForEmployee = query({
       .collect();
 
     return records ? records.sort((a: any, b: any) => a.date.localeCompare(b.date)) : [];
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
   }
 });
+

@@ -12,6 +12,12 @@ export default function App() {
   const { isLoading, isAuthenticated } = useConvexAuth();
   const [showLogin, setShowLogin] = useState(false);
 
+  console.log("App Render:", {
+    isLoading,
+    isAuthenticated,
+    convexUrl: import.meta.env.VITE_CONVEX_URL
+  });
+
   // If initial auth check is loading, show a minimal loader
   if (isLoading) {
     return (

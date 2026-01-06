@@ -125,24 +125,30 @@ export function SignInForm() {
             }));
           }
 
+          console.log("Starting sign in/up flow:", flow);
           setSubmitting(true);
           formData.set("flow", flow);
-          void signIn("password", formData).catch((error) => {
-            let toastTitle = "";
-            if (error.message.includes("Invalid password")) {
-              toastTitle = "Invalid password. Please try again.";
-            } else {
-              toastTitle =
-                flow === "signUp" && error.message.includes("already exists")
-                  ? "An account with this email already exists."
-                  : flow === "signIn"
-                    ? "Invalid credentials. Please check your email and password."
-                    : "Could not complete the request. Please try again.";
-            }
-            toast.error(toastTitle);
-            setSubmitting(false);
-            localStorage.removeItem("pending_signup_data");
-          });
+          void signIn("password", formData)
+            .then(() => {
+              console.log("Sign in success!");
+            })
+            .catch((error) => {
+              console.error("Sign in failed:", error);
+              let toastTitle = "";
+              if (error.message.includes("Invalid password")) {
+                toastTitle = "Invalid password. Please try again.";
+              } else {
+                toastTitle =
+                  flow === "signUp" && error.message.includes("already exists")
+                    ? "An account with this email already exists."
+                    : flow === "signIn"
+                      ? "Invalid credentials. Please check your email and password."
+                      : "Could not complete the request. Please try again.";
+              }
+              toast.error(toastTitle);
+              setSubmitting(false);
+              localStorage.removeItem("pending_signup_data");
+            });
         }}
       >
         <AnimatePresence mode="popLayout">
@@ -248,7 +254,10 @@ export function SignInForm() {
 
       <button
         className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-slate-300 py-3 rounded-xl hover:bg-white/10 hover:text-white transition-all active:scale-[0.98]"
-        onClick={() => void signIn("anonymous")}
+        onClick={() => {
+          console.log("Attempting anonymous sign in");
+          void signIn("anonymous");
+        }}
       >
         <Ghost size={18} />
         <span>Continue Anonymously</span>

@@ -5,11 +5,7 @@ import {
     PieChart, Pie, Cell, AreaChart, Area
 } from "recharts";
 import { motion } from "framer-motion";
-<<<<<<< HEAD
 import { TrendingUp, IndianRupee, Activity, Users } from "lucide-react";
-=======
-import { TrendingUp, DollarSign, Activity, Users } from "lucide-react";
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
 
 export function AnalyticsDashboard() {
     const attendanceStats = useQuery(api.analytics.getAttendanceStats);
@@ -53,13 +49,8 @@ export function AnalyticsDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <MetricCard
                     label="Total Payroll Processed"
-<<<<<<< HEAD
                     value={`₹${payrollStats.totalPaid.toLocaleString('en-IN')}`}
                     icon={<IndianRupee size={24} className="text-white" />}
-=======
-                    value={`$${payrollStats.totalPaid.toLocaleString()}`}
-                    icon={<DollarSign size={24} className="text-white" />}
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                     trend="+12% vs last month"
                     delay={0}
                 />
@@ -175,11 +166,7 @@ export function AnalyticsDashboard() {
                         {/* Center Text */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                             <p className="text-silver-dark text-xs uppercase tracking-widest mb-1">Total</p>
-<<<<<<< HEAD
                             <p className="text-2xl font-bold text-white">₹{(payrollStats.totalPaid / 1000).toFixed(1)}k</p>
-=======
-                            <p className="text-2xl font-bold text-white">${(payrollStats.totalPaid / 1000).toFixed(1)}k</p>
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                         </div>
                     </div>
 

@@ -32,11 +32,7 @@ export function PayrollCard({ records, detailed = false }: PayrollCardProps) {
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-white">
-<<<<<<< HEAD
                     ₹{record.netSalary.toLocaleString('en-IN')}
-=======
-                    ${record.netSalary.toLocaleString()}
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                   </p>
                   <p className="text-slate-300 text-sm">Net Salary</p>
                 </div>
@@ -46,33 +42,21 @@ export function PayrollCard({ records, detailed = false }: PayrollCardProps) {
                 <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
                   <p className="text-green-300 text-sm font-medium">Base Salary</p>
                   <p className="text-white text-lg font-semibold">
-<<<<<<< HEAD
                     ₹{record.baseSalary.toLocaleString('en-IN')}
-=======
-                    ${record.baseSalary.toLocaleString()}
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                   </p>
                 </div>
 
                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
                   <p className="text-blue-300 text-sm font-medium">Allowances</p>
                   <p className="text-white text-lg font-semibold">
-<<<<<<< HEAD
                     +₹{record.allowances.toLocaleString('en-IN')}
-=======
-                    +${record.allowances.toLocaleString()}
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                   </p>
                 </div>
 
                 <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
                   <p className="text-red-300 text-sm font-medium">Deductions</p>
                   <p className="text-white text-lg font-semibold">
-<<<<<<< HEAD
                     -₹{record.deductions.toLocaleString('en-IN')}
-=======
-                    -${record.deductions.toLocaleString()}
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                   </p>
                 </div>
               </div>
@@ -119,11 +103,7 @@ export function PayrollCard({ records, detailed = false }: PayrollCardProps) {
           <div className="flex justify-between">
             <span className="text-purple-300">Net Salary:</span>
             <span className="text-white font-semibold text-lg">
-<<<<<<< HEAD
               ₹{latestRecord.netSalary.toLocaleString('en-IN')}
-=======
-              ${latestRecord.netSalary.toLocaleString()}
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
             </span>
           </div>
 

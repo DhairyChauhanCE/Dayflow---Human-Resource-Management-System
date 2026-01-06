@@ -25,29 +25,66 @@ body {
   overflow-x: hidden;
 }
 
-.glass-card {
-  @apply bg-[#0A0A0A]/80 backdrop-blur-2xl border border-white/10;
-  box-shadow: 0px 8px 32px 0px rgba(0, 0, 0, 0.8);
-}
+@layer utilities {
+  .text-gradient-workflow {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-200 to-white;
+    background-size: 200% auto;
+    animation: textShine 4s linear infinite;
+  }
 
-.text-gradient-workflow {
-  @apply text-transparent bg-clip-text bg-gradient-to-r from-[#A855F7] via-[#D946EF] to-[#EC4899];
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+  }
+
+  .animate-marquee2 {
+    animation: marquee2 30s linear infinite;
+  }
 }
 
 @keyframes float {
-  0% {
-    transform: translateY(0px);
+
+  0%,
+  100% {
+    transform: translateY(0);
   }
 
   50% {
     transform: translateY(-20px);
   }
+}
 
-  100% {
-    transform: translateY(0px);
+@keyframes textShine {
+  to {
+    background-position: 200% center;
   }
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes marquee2 {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(0%);
+  }
 }

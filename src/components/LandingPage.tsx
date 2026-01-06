@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, BarChart3, ShieldCheck, Zap, Mail, Phone, MapPin, Menu, X, Lock } from "lucide-react";
+import { ArrowRight, BarChart3, ShieldCheck, Zap, Mail, Phone, MapPin, Menu, X, Lock, Check, Star } from "lucide-react";
 
 interface LandingPageProps {
     onGetStarted: () => void;
@@ -9,6 +9,7 @@ interface LandingPageProps {
 export function LandingPage({ onGetStarted }: LandingPageProps) {
     const [showPrivacy, setShowPrivacy] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [isYearly, setIsYearly] = useState(true);
     return (
         <div className="min-h-screen flex flex-col relative overflow-hidden">
             {/* Background Ambience */}
@@ -142,7 +143,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                                         </div>
                                     ))}
                                 </div>
-                                <p className="text-xs text-gray-600 font-medium">Trusted by 100+ Companies</p>
+                                <p className="text-xs text-gray-600 font-medium">Trusted by 50+ Companies</p>
                             </div>
                             <div className="space-y-2">
                                 <div className="flex gap-1 text-yellow-500">
@@ -152,7 +153,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                                         </svg>
                                     ))}
                                 </div>
-                                <p className="text-xs text-gray-600 font-medium">4.9/5 from Users</p>
+                                <p className="text-xs text-gray-600 font-medium">4.6/5 from Users</p>
                             </div>
                         </motion.div>
                     </div>
@@ -202,27 +203,134 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                         Powerful features wrapped in a beautiful interface that your team will actually enjoy using.
                     </p>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
                         <FeatureCard
                             icon={<Zap size={24} />}
-                            title="Lightning Fast"
-                            desc="Optimized for speed with Edge caching. Every interaction feels instantaneous, no matter where your team is located."
+                            title="Automated Payroll"
+                            desc="Global payroll processing in minutes. Automated tax calculations, deductions, and direct deposits with zero manual effort."
                         />
                         <FeatureCard
                             icon={<ShieldCheck size={24} />}
-                            title="Bank-Grade Security"
-                            desc="Your data is encrypted at rest and in transit. Role-based access control ensures data privacy at every level."
+                            title="Geofenced Attendance"
+                            desc="Location-intelligent check-ins. Ensure your team is at the right place with secure, fraud-proof attendance tracking."
                         />
                         <FeatureCard
                             icon={<BarChart3 size={24} />}
-                            title="Deep Insights"
-                            desc="Make data-driven decisions with our advanced analytics suite. Visualize attendance, productivity, and payroll trends."
+                            title="AI Workforce Insights"
+                            desc="Leverage Gemini-powered analytics to track productivity, predict turnover, and optimize team performance effortlessly."
+                        />
+                        <FeatureCard
+                            icon={<Mail size={24} />}
+                            title="Document Cloud"
+                            desc="Centralized, secure storage for all HR documents. E-signatures, contract management, and version control in one place."
+                        />
+                        <FeatureCard
+                            icon={<Zap size={24} />}
+                            title="Employee Self-Service"
+                            desc="Empower your team with a personalized portal. Request leaves, view payslips, and update profiles anytime, anywhere."
+                        />
+                        <FeatureCard
+                            icon={<Zap size={24} />}
+                            title="Smart Integrations"
+                            desc="Connect seamlessly with Slack, Microsoft Teams, Jira, and more. Keep your HR data synced across your entire stack."
+                        />
+                    </div>
+                </div>
+
+                {/* Pricing Section */}
+                <div id="pricing" className="max-w-7xl mx-auto mt-48 text-center">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-bold text-indigo-400 mb-6 uppercase tracking-widest">
+                        Pricing Plans
+                    </div>
+                    <h2 className="text-5xl font-bold text-white mb-6">Scale with your team.</h2>
+                    <p className="text-gray-500 text-lg max-w-2xl mx-auto mb-12">
+                        Transparent pricing for companies of all sizes. No hidden fees, ever.
+                    </p>
+
+                    {/* Pricing Toggle */}
+                    <div className="flex items-center justify-center gap-4 mb-16">
+                        <span className={`text-sm font-medium ${!isYearly ? 'text-white' : 'text-gray-500'}`}>Monthly</span>
+                        <button
+                            onClick={() => setIsYearly(!isYearly)}
+                            className="w-14 h-8 bg-white/5 rounded-full p-1 relative border border-white/10 transition-colors"
+                        >
+                            <motion.div
+                                animate={{ x: isYearly ? 24 : 0 }}
+                                className="w-6 h-6 bg-white rounded-full shadow-lg"
+                            />
+                        </button>
+                        <span className={`text-sm font-medium ${isYearly ? 'text-white' : 'text-gray-500'}`}>Yearly <span className="text-emerald-500 ml-1">(Save 20%)</span></span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <PricingCard
+                            tier="Starter"
+                            price={isYearly ? "0" : "0"}
+                            desc="Essential features for individual founders and tiny teams."
+                            features={["Up to 5 Employees", "Basic Payroll", "Standard Attendance", "Community Support"]}
+                        />
+                        <PricingCard
+                            tier="Professional"
+                            price={isYearly ? "15" : "19"}
+                            desc="Advanced tools for growing businesses focused on efficiency."
+                            features={["Up to 50 Employees", "AI Insights", "Document Cloud", "Priority Support", "Custom Integrations"]}
+                            highlighted
+                        />
+                        <PricingCard
+                            tier="Enterprise"
+                            price="Custom"
+                            desc="Full-scale solution for large organizations with complex needs."
+                            features={["Unlimited Employees", "SSO & SAML", "Personal Account Manager", "Custom Training", "SLA Guarantee"]}
+                        />
+                    </div>
+                </div>
+
+                {/* Partners Section */}
+                <div className="max-w-7xl mx-auto mt-48 overflow-hidden relative">
+                    <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#020202] to-transparent z-10"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#020202] to-transparent z-10"></div>
+
+                    <div className="flex whitespace-nowrap animate-marquee">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <div key={i} className="flex items-center gap-12 mx-12">
+                                <span className="text-2xl font-black text-white/20 tracking-tighter uppercase italic">charusat {i}</span>
+                                <div className="w-1 h-1 rounded-full bg-white/10"></div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Testimonials Section */}
+                <div id="testimonials" className="max-w-7xl mx-auto mt-48 px-6">
+                    <div className="text-center mb-20">
+                        <h2 className="text-5xl font-bold text-white mb-6">Trusted by modern teams.</h2>
+                        <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+                            Join thousands of managers who have already simplified their workflow with Dayflow.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <TestimonialCard
+                            name="Alex Rivera"
+                            role="HR Director at TechFlow"
+                            content="Dayflow has completely transformed how we handle payroll. It used to take days, now it takes minutes. The AI insights are just the icing on the cake."
+                        />
+                        <TestimonialCard
+                            name="Sarah Chen"
+                            role="Founder of Bloom Labs"
+                            content="The interface is so intuitive that our team actually enjoys using it. The geofenced attendance is a game-changer for our remote-first culture."
+                            highlighted
+                        />
+                        <TestimonialCard
+                            name="Marcus Thorne"
+                            role="Operations Lead at Nexus"
+                            content="Security was our top priority when choosing an HRMS. Dayflow's bank-grade encryption gave us the peace of mind we needed."
                         />
                     </div>
                 </div>
 
                 {/* Contact Us Section */}
-                <div id="contact" className="max-w-7xl mx-auto mt-32">
+                <div id="contact" className="max-w-7xl mx-auto mt-64 group/contact relative">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl font-bold text-white mb-4">Get in Touch</h2>
                         <p className="text-gray-400 text-lg max-w-2xl mx-auto">
@@ -411,6 +519,31 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                         </div>
                     </motion.div>
                 )}
+                {/* FAQ Section */}
+                <div id="faq" className="max-w-3xl mx-auto mt-64 px-6 mb-32">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl font-bold text-white mb-4">Frequently Asked Questions</h2>
+                        <p className="text-gray-500">Everything you need to know about Dayflow.</p>
+                    </div>
+                    <div className="space-y-2">
+                        <FAQItem
+                            question="How secure is my company data?"
+                            answer="We use industry-standard AES-256 encryption for all data at rest and TLS 1.3 for data in transit. Your data is stored in SOC 2 Type II compliant data centers."
+                        />
+                        <FAQItem
+                            question="Can I upgrade or downgrade my plan later?"
+                            answer="Yes, you can change your plan at any time. Changes are prorated, and you'll only be charged for what you use."
+                        />
+                        <FAQItem
+                            question="Is there a limit on the number of employees?"
+                            answer="The Starter plan supports up to 5 employees. Professional supports up to 50, and Enterprise is unlimited."
+                        />
+                        <FAQItem
+                            question="Do you offer custom integrations?"
+                            answer="Professional and Enterprise plans include access to our robust API and support for custom webhook integrations with your existing tools."
+                        />
+                    </div>
+                </div>
             </main>
 
             {/* Enhanced Footer */}
@@ -481,6 +614,102 @@ function FeatureCard({ icon, title, desc }: { icon: any, title: string, desc: st
             </div>
             <h3 className="text-xl font-bold text-white mb-4">{title}</h3>
             <p className="text-gray-600 leading-relaxed text-sm">{desc}</p>
+        </div>
+    )
+}
+
+function PricingCard({ tier, price, desc, features, highlighted = false }: {
+    tier: string,
+    price: string,
+    desc: string,
+    features: string[],
+    highlighted?: boolean
+}) {
+    return (
+        <div className={`p-8 rounded-[40px] border transition-all duration-500 relative ${highlighted
+            ? 'bg-white/10 border-white/20 shadow-2xl scale-105 z-10'
+            : 'bg-[#0A0A0A] border-white/5 hover:border-white/10'
+            }`}>
+            {highlighted && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-500 text-white px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                    Most Popular
+                </div>
+            )}
+            <h3 className="text-xl font-bold text-white mb-2">{tier}</h3>
+            <p className="text-gray-500 text-sm mb-8">{desc}</p>
+            <div className="flex items-baseline gap-1 mb-8">
+                <span className="text-4xl font-black text-white">{price === "Custom" ? "" : "$"}{price}</span>
+                {price !== "Custom" && <span className="text-gray-500 font-medium">/mo</span>}
+            </div>
+            <button className={`w-full py-4 rounded-2xl font-bold transition-all mb-8 ${highlighted
+                ? 'bg-white text-black hover:bg-gray-100'
+                : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'
+                }`}>
+                {price === "Custom" ? "Contact Sales" : "Get Started"}
+            </button>
+            <ul className="space-y-4 text-left">
+                {features.map((f, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm text-gray-400">
+                        <Check size={16} className="text-emerald-500" />
+                        {f}
+                    </li>
+                ))}
+            </ul>
+        </div>
+    )
+}
+
+function TestimonialCard({ name, role, content, highlighted = false }: {
+    name: string,
+    role: string,
+    content: string,
+    highlighted?: boolean
+}) {
+    return (
+        <div className={`p-8 rounded-[32px] border transition-all duration-300 ${highlighted
+            ? 'bg-white/5 border-white/20'
+            : 'bg-[#0A0A0A] border-white/5 hover:border-white/10'
+            }`}>
+            <div className="flex gap-1 text-yellow-500 mb-6">
+                {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={14} fill="currentColor" />)}
+            </div>
+            <p className="text-gray-300 leading-relaxed italic mb-8">"{content}"</p>
+            <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500"></div>
+                <div>
+                    <h4 className="text-white font-bold text-sm">{name}</h4>
+                    <p className="text-gray-500 text-xs">{role}</p>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function FAQItem({ question, answer }: { question: string, answer: string }) {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <div className="border-b border-white/5">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full py-6 flex items-center justify-between text-left group"
+            >
+                <span className="text-lg font-medium text-white group-hover:text-indigo-400 transition-colors">{question}</span>
+                <motion.div
+                    animate={{ rotate: isOpen ? 45 : 0 }}
+                    className="text-gray-500"
+                >
+                    <X size={20} />
+                </motion.div>
+            </button>
+            <motion.div
+                initial={false}
+                animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
+                className="overflow-hidden"
+            >
+                <p className="pb-6 text-gray-500 leading-relaxed">
+                    {answer}
+                </p>
+            </motion.div>
         </div>
     )
 }

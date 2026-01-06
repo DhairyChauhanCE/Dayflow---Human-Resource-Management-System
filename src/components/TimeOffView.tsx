@@ -32,22 +32,21 @@ export function TimeOffView({ employee }: TimeOffViewProps) {
     attachment: null as File | null
   });
 
-  // Use Convex queries
-  // Admin/HR sees all requests, Employees see only theirs (handled by backend)
-  const timeOffRequests = useQuery(api.timeOff.getTimeOffRequests, {
+
+  const timeOffRequests = useQuery(api.leaves.getTimeOffRequests, {
     employeeId: employee.role === "admin" || employee.role === "hr" ? undefined : employee._id
   }) || [];
 
-  const timeOffBalances = useQuery(api.timeOff.getTimeOffBalances) || {
+  const timeOffBalances = useQuery(api.leaves.getTimeOffBalances) || {
     paid: 24,
     sick: 7,
     unpaid: 0
   };
 
-  const createTimeOffRequest = useMutation(api.timeOff.createTimeOffRequest);
-  const approveRequest = useMutation(api.timeOff.approveTimeOffRequest);
-  const rejectRequest = useMutation(api.timeOff.rejectTimeOffRequest);
-  const generateUploadUrl = useMutation(api.timeOff.generateUploadUrl);
+  const createTimeOffRequest = useMutation(api.leaves.createTimeOffRequest);
+  const approveRequest = useMutation(api.leaves.approveTimeOffRequest);
+  const rejectRequest = useMutation(api.leaves.rejectTimeOffRequest);
+  const generateUploadUrl = useMutation(api.leaves.generateUploadUrl);
 
   const isAdminOrHr = employee.role === "admin" || employee.role === "hr";
 

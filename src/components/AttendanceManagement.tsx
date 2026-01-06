@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
@@ -12,8 +11,10 @@ import {
   ChevronRight,
   Filter,
   Download,
-  FileText
+  FileText,
+  AlertCircle
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface AttendanceManagementProps {
   isAdmin?: boolean;
@@ -22,37 +23,43 @@ interface AttendanceManagementProps {
 export function AttendanceManagement({ isAdmin = false }: AttendanceManagementProps) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Computed range for the selected month
   const startOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1).toISOString().split('T')[0];
   const endOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0).toISOString().split('T')[0];
 
   const [selectedEmployee, setSelectedEmployee] = useState("");
-  const [attendanceStatus, setAttendanceStatus] = useState<"present" | "absent" | "half-day" | "leave">("present");
+  const [attendanceStatus, setAttendanceStatus] = useState<"present" | "absent" | "half-day" | "leave" | "on_leave">("present");
   const [remarks, setRemarks] = useState("");
 
   // Only fetch all employees if admin
   const employees = useQuery(api.employees.getAllEmployees, isAdmin ? {} : "skip") || [];
 
   // Fetch monthly stats and history for the employee view
-  // Skip if we are in admin mode as this is personal data
   const monthlyStats = useQuery(api.attendance.getMonthlyAttendanceStats, !isAdmin ? {
     month: selectedMonth.getMonth(),
     year: selectedMonth.getFullYear()
   } : "skip");
 
-  const monthlyAttendance = useQuery(api.attendance.getAttendanceHistory, !isAdmin ? {
-    startDate: startOfMonth,
-    endDate: endOfMonth
+  const monthlyAttendance = useQuery(api.attendance.fetchMonthlyAttendanceForEmployee, !isAdmin ? {
+    month: selectedMonth.getMonth() + 1,
+    year: selectedMonth.getFullYear()
   } : "skip") || [];
 
 
   // Fetch attendance for the selected date (Admin View)
-  // We pass 'date' which is now supported by the backend for Admin queries
-  const attendanceHistory = useQuery(api.attendance.getAttendanceHistory, {
-    date: selectedDate,
-    employeeId: selectedEmployee ? (selectedEmployee as any) : undefined
-  }) || [];
+  const attendanceHistory = useQuery(api.attendance.fetchDailyAttendanceForAdmin, isAdmin ? {
+    date: selectedDate
+  } : "skip") || [];
+
+  const filteredAttendance = useMemo(() => {
+    if (!attendanceHistory) return [];
+    return attendanceHistory.filter((record: any) => {
+      const employeeName = record.employeeName || (record.employee ? `${record.employee.firstName} ${record.employee.lastName}` : "Unknown");
+      return employeeName.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+  }, [attendanceHistory, searchTerm]);
 
   const markAttendance = useMutation(api.attendance.markAttendance);
 
@@ -82,7 +89,8 @@ export function AttendanceManagement({ isAdmin = false }: AttendanceManagementPr
       case "present": return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
       case "absent": return "bg-rose-500/20 text-rose-400 border-rose-500/30";
       case "half-day": return "bg-amber-500/20 text-amber-400 border-amber-500/30";
-      case "leave": return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+      case "leave":
+      case "on_leave": return "bg-blue-500/20 text-blue-400 border-blue-500/30";
       default: return "bg-slate-500/20 text-slate-400 border-slate-500/30";
     }
   };
@@ -96,6 +104,18 @@ export function AttendanceManagement({ isAdmin = false }: AttendanceManagementPr
 
   const handleNextMonth = () => {
     setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 1));
+  };
+
+  const handlePrevDay = () => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() - 1);
+    setSelectedDate(d.toISOString().split('T')[0]);
+  };
+
+  const handleNextDay = () => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + 1);
+    setSelectedDate(d.toISOString().split('T')[0]);
   };
 
   // Generate days for the selected month
@@ -128,12 +148,20 @@ export function AttendanceManagement({ isAdmin = false }: AttendanceManagementPr
             <form onSubmit={handleMarkAttendance} className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Date</label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-xl px-2 py-1">
+                  <button type="button" onClick={handlePrevDay} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 transition-colors">
+                    <ChevronLeft size={20} />
+                  </button>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="flex-1 bg-transparent border-none text-white focus:outline-none py-2 text-center"
+                  />
+                  <button type="button" onClick={handleNextDay} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 transition-colors">
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -155,17 +183,17 @@ export function AttendanceManagement({ isAdmin = false }: AttendanceManagementPr
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Status</label>
                 <div className="grid grid-cols-2 gap-3">
-                  {["present", "absent", "half-day", "leave"].map((status) => (
+                  {["present", "absent", "half-day", "leave", "on_leave"].map((status) => (
                     <button
                       key={status}
                       type="button"
                       onClick={() => setAttendanceStatus(status as any)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium capitalize border transition-all ${attendanceStatus === status
+                      className={`px-2 py-2 rounded-lg text-xs font-medium capitalize border transition-all ${attendanceStatus === status
                         ? "bg-indigo-500 text-white border-indigo-500 shadow-lg scale-105"
                         : "bg-white/5 text-slate-400 border-white/5 hover:bg-white/10"
                         }`}
                     >
-                      {status}
+                      {status === "on_leave" ? "On Leave" : status}
                     </button>
                   ))}
                 </div>
@@ -192,31 +220,48 @@ export function AttendanceManagement({ isAdmin = false }: AttendanceManagementPr
 
           {/* Daily Records List */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="glass-card p-6 rounded-2xl border border-white/10">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-white">Records for {selectedDate}</h3>
-                <div className="flex gap-2">
-                  <button className="p-2 bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors">
-                    <Filter size={18} />
-                  </button>
-                  <button className="p-2 bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors">
-                    <Search size={18} />
-                  </button>
+            <div className="glass-card p-6 rounded-2xl border border-white/10 bg-white/5 min-h-[400px]">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                <h3 className="text-lg font-bold text-white">Records for {new Date(selectedDate).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</h3>
+                <div className="relative w-full md:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Search employee..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-black/20 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
                 </div>
               </div>
 
               <div className="space-y-3">
-                {attendanceHistory.length > 0 ? (
-                  attendanceHistory.map((record: any) => (
-                    <div key={record._id} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl hover:border-white/10 transition-all">
+                {attendanceHistory === undefined ? (
+                  <div className="text-center py-12 animate-pulse text-slate-500">Loading records...</div>
+                ) : filteredAttendance.length > 0 ? (
+                  filteredAttendance.map((record: any) => (
+                    <motion.div
+                      key={record._id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl hover:border-white/10 transition-all"
+                    >
                       <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${record.employeeName ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-700 text-slate-400'
-                          }`}>
-                          <User size={18} />
+                        <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-white/10 overflow-hidden">
+                          {record.employee?.profilePictureUrl ? (
+                            <img src={record.employee.profilePictureUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <User size={18} className="text-indigo-300" />
+                          )}
                         </div>
                         <div>
-                          <p className="text-white font-medium">{record.employeeName || "Unknown Employee"}</p>
-                          <p className="text-xs text-slate-500">{record.checkIn || "09:00 AM"} - {record.checkOut || "06:00 PM"}</p>
+                          <p className="text-white font-medium">
+                            {record.employeeName || (record.employee ? `${record.employee.firstName} ${record.employee.lastName}` : "Unknown Employee")}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {record.checkIn || "09:00 AM"} - {record.checkOut || "06:00 PM"}
+                            {record.hoursWorked ? ` • ${record.hoursWorked.toFixed(1)}h` : ""}
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
@@ -225,12 +270,12 @@ export function AttendanceManagement({ isAdmin = false }: AttendanceManagementPr
                         </span>
                         {record.remarks && <p className="text-xs text-slate-500 mt-1 max-w-[150px] truncate">{record.remarks}</p>}
                       </div>
-                    </div>
+                    </motion.div>
                   ))
                 ) : (
                   <div className="text-center py-12">
                     <CalendarIcon className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                    <p className="text-slate-400">No attendance records for this date</p>
+                    <p className="text-slate-400">No attendance records found</p>
                   </div>
                 )}
               </div>
@@ -289,7 +334,7 @@ export function AttendanceManagement({ isAdmin = false }: AttendanceManagementPr
                 if (status === "present") statusColor = "bg-emerald-500";
                 else if (status === "absent") statusColor = "bg-rose-500";
                 else if (status === "half-day") statusColor = "bg-amber-500";
-                else if (status === "leave") statusColor = "bg-blue-500";
+                else if (status === "leave" || status === "on_leave") statusColor = "bg-blue-500";
 
                 return (
                   <div key={day} className="aspect-square bg-white/5 border border-white/5 rounded-xl p-3 relative group hover:bg-white/10 transition-all cursor-pointer">
@@ -320,7 +365,7 @@ export function AttendanceManagement({ isAdmin = false }: AttendanceManagementPr
               <ul className="space-y-3 text-slate-400 text-sm list-disc pl-5">
                 <li>If the employee's working source is based on the assigned attendance</li>
                 <li>On the Attendance page, users should see a day-wise attendance of themselves by default for ongoing month, displaying details based on their working time, including breaks.</li>
-                <li>For Admins/Time off officers: They can see attendance of all the employees present on the current day.</li>
+                <li>For Admins: They can see attendance of all the employees present on the selected day.</li>
                 <li>Attendance data serves as the basis for payslip generation.</li>
                 <li>The system should use the generated attendance records to determine the total number of payable days for each employee.</li>
                 <li>Any unpaid leave or missing attendance days should automatically reduce the number of payable days during payslip computation</li>
@@ -329,151 +374,6 @@ export function AttendanceManagement({ isAdmin = false }: AttendanceManagementPr
           </div>
         </>
       )}
-=======
-import { useState, useMemo } from "react";
-import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { ChevronLeft, ChevronRight, User, Search, AlertCircle } from "lucide-react";
-import { motion } from "framer-motion";
-
-export function AttendanceManagement() {
-  const [date, setDate] = useState(new Date());
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const dateStr = useMemo(() => {
-    try {
-      return date.toISOString().split('T')[0];
-    } catch (e) {
-      return new Date().toISOString().split('T')[0];
-    }
-  }, [date]);
-
-  const records = useQuery(api.attendance.fetchDailyAttendanceForAdmin, { date: dateStr });
-
-  const filteredRecords = useMemo(() => {
-    if (!records) return null;
-    return records.filter((r: any) => {
-      if (!r || !r.employee) return false;
-      const fullName = `${r.employee.firstName || ''} ${r.employee.lastName || ''}`.toLowerCase();
-      return fullName.includes(searchTerm.toLowerCase());
-    });
-  }, [records, searchTerm]);
-
-  const handlePrevDay = () => {
-    const d = new Date(date);
-    d.setDate(d.getDate() - 1);
-    setDate(d);
-  };
-
-  const handleNextDay = () => {
-    const d = new Date(date);
-    d.setDate(d.getDate() + 1);
-    setDate(d);
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* Header / Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <div className="bg-[#050505] rounded-lg border border-white/20 p-1 flex items-center">
-            <button onClick={handlePrevDay} className="p-2 hover:bg-white/10 rounded-md text-slate-400 hover:text-white transition-colors">
-              <ChevronLeft size={20} />
-            </button>
-            <button onClick={handleNextDay} className="p-2 hover:bg-white/10 rounded-md text-slate-400 hover:text-white transition-colors">
-              <ChevronRight size={20} />
-            </button>
-          </div>
-          <div className="px-4 py-2 bg-[#050505] border border-white/20 rounded-lg min-w-[150px] text-center">
-            <span className="text-white font-handwriting text-lg">
-              {date.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </span>
-          </div>
-        </div>
-
-        <div className="relative w-full md:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-          <input
-            type="text"
-            placeholder="Search employee..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#050505] border border-white/20 rounded-lg pl-10 pr-4 py-2 text-slate-300 font-handwriting focus:outline-none focus:border-indigo-500 shadow-inner"
-          />
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="rounded-xl border border-white/10 overflow-hidden bg-white/5 min-h-[400px]">
-        <div className="grid grid-cols-12 p-4 text-slate-400 font-handwriting text-lg border-b border-white/10 bg-black/20">
-          <div className="col-span-4 pl-4">Employee</div>
-          <div className="col-span-2">Check In</div>
-          <div className="col-span-2">Check Out</div>
-          <div className="col-span-2 text-center">Hours</div>
-          <div className="col-span-2 text-right pr-4">Extra</div>
-        </div>
-
-        <div className="divide-y divide-white/5 bg-black/10">
-          {records === undefined ? (
-            <div className="p-12 text-center text-slate-500 font-handwriting animate-pulse">
-              Loading attendance records...
-            </div>
-          ) : records === null ? (
-            <div className="p-12 text-center space-y-3">
-              <AlertCircle className="mx-auto text-rose-500" size={32} />
-              <p className="text-slate-400 font-handwriting text-lg">Access Denied. Admin/HR role required.</p>
-            </div>
-          ) : filteredRecords && filteredRecords.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 font-handwriting text-lg">
-              No records found for this date.
-            </div>
-          ) : (
-            filteredRecords?.map((record: any) => {
-              if (!record) return null;
-              const workHours = (record.hoursWorked || 0);
-              const extra = Math.max(0, workHours - 9);
-
-              return (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  key={record._id}
-                  className="grid grid-cols-12 p-4 text-slate-300 font-handwriting text-lg hover:bg-white/5 transition-colors items-center"
-                >
-                  <div className="col-span-4 pl-4 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center border border-white/10 overflow-hidden shrink-0">
-                      {record.employee?.profilePictureUrl ? (
-                        <img src={record.employee.profilePictureUrl} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <User size={16} className="text-white/30" />
-                      )}
-                    </div>
-                    <div className="flex flex-col truncate">
-                      <span className="truncate">{record.employee?.firstName} {record.employee?.lastName}</span>
-                      <span className="text-[10px] text-slate-500 uppercase tracking-tighter">{record.employee?.department || 'Staff'}</span>
-                    </div>
-                  </div>
-                  <div className="col-span-2 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    {record.checkIn || "--:--"}
-                  </div>
-                  <div className="col-span-2 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                    {record.checkOut || "--:--"}
-                  </div>
-                  <div className="col-span-2 text-center font-mono text-base">
-                    {workHours > 0 ? workHours.toFixed(1) + "h" : '-'}
-                  </div>
-                  <div className="col-span-2 text-right pr-4 text-emerald-400 font-bold">
-                    {extra > 0 ? `+${extra.toFixed(1)}h` : '-'}
-                  </div>
-                </motion.div>
-              );
-            })
-          )}
-        </div>
-      </div>
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
     </div>
   );
 }

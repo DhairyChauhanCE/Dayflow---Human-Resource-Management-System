@@ -25,7 +25,7 @@ export const getAllLeaveRequests = query({
     }
 
     let requests;
-    
+
     if (args.status) {
       requests = await ctx.db
         .query("leaveRequests")
@@ -35,7 +35,7 @@ export const getAllLeaveRequests = query({
     } else {
       requests = await ctx.db.query("leaveRequests").order("desc").collect();
     }
-    
+
     // Get employee details for each request
     const requestsWithEmployees = await Promise.all(
       requests.map(async (request: any) => {
@@ -96,125 +96,162 @@ export const applyLeave = mutation({
   },
 });
 
-<<<<<<< HEAD
+export const getTimeOffBalances = query({
+  args: {},
+  handler: async (ctx) => {
+    const employee = await ctx.runQuery(api.employees.getCurrentEmployee);
+    if (!employee) throw new Error("Unauthorized");
+
+    return employee.leaveBalances || {
+      paid: 24,
+      sick: 7,
+      personal: 0
+    };
+  },
+});
+
+export const getTimeOffRequests = query({
+  args: { employeeId: v.optional(v.id("employees")) },
+  handler: async (ctx, args) => {
+    const currentEmployee = await ctx.runQuery(api.employees.getCurrentEmployee);
+    if (!currentEmployee) throw new Error("Unauthorized");
+
+    let requests;
+
+    if (args.employeeId) {
+      requests = await ctx.db
+        .query("leaveRequests")
+        .withIndex("by_employee", (q: any) => q.eq("employeeId", args.employeeId as any))
+        .order("desc")
+        .collect();
+    } else if (currentEmployee.role === "employee") {
+      requests = await ctx.db
+        .query("leaveRequests")
+        .withIndex("by_employee", (q: any) => q.eq("employeeId", currentEmployee._id))
+        .order("desc")
+        .collect();
+    } else {
+      requests = await ctx.db.query("leaveRequests").order("desc").collect();
+    }
+
+    // Get employee details for each request
+    return await Promise.all(
+      requests.map(async (request: any) => {
+        const employee = (await ctx.db.get(request.employeeId)) as any;
+        return {
+          ...request,
+          employee,
+          employeeName: employee ? `${employee.firstName} ${employee.lastName}` : "Unknown"
+        };
+      })
+    );
+  },
+});
+
+async function processLeaveApproval(ctx: any, args: { leaveId: any, status: "approved" | "rejected", comments?: string }) {
+  const currentEmployee = await ctx.runQuery(api.employees.getCurrentEmployee);
+  if (!currentEmployee || currentEmployee.role === "employee") {
+    throw new Error("Access denied");
+  }
+
+  const leaveRequest = await ctx.db.get(args.leaveId);
+  if (!leaveRequest) throw new Error("Leave request not found");
+
+  await ctx.db.patch(args.leaveId, {
+    status: args.status,
+    approvedBy: currentEmployee._id,
+    approvalComments: args.comments
+  });
+
+  // Update employee leave balances if approved
+  if (args.status === "approved") {
+    const employee = await ctx.db.get(leaveRequest.employeeId);
+    if (employee && employee.leaveBalances) {
+      const type = leaveRequest.leaveType as keyof typeof employee.leaveBalances;
+      if (employee.leaveBalances[type] !== undefined) {
+        const newBalances = { ...employee.leaveBalances };
+        newBalances[type] = Math.max(0, (newBalances[type] || 0) - leaveRequest.days);
+        await ctx.db.patch(employee._id, { leaveBalances: newBalances });
+      }
+    }
+  }
+
+  // Create notification for employee
+  const employee = await ctx.db.get(leaveRequest.employeeId);
+  if (employee) {
+    await ctx.db.insert("notifications", {
+      recipientId: employee._id,
+      title: `Leave Request ${args.status}`,
+      message: `Your ${leaveRequest.leaveType} leave request from ${leaveRequest.startDate} to ${leaveRequest.endDate} has been ${args.status}${args.comments ? `. Comments: ${args.comments}` : ''}`,
+      type: args.status === "approved" ? "leave_approved" : "leave_rejected",
+      read: false,
+      createdAt: Date.now()
+    });
+  }
+
+  // If approved, mark attendance as leave for those dates
+  if (args.status === "approved") {
+    const startDate = new Date(leaveRequest.startDate);
+    const endDate = new Date(leaveRequest.endDate);
+
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+
+      const existing = await ctx.db
+        .query("attendance")
+        .withIndex("by_employee_and_date", (q: any) =>
+          q.eq("employeeId", leaveRequest.employeeId).eq("date", dateStr)
+        )
+        .unique();
+
+      if (existing) {
+        await ctx.db.patch(existing._id, { status: "leave" });
+      } else {
+        await ctx.db.insert("attendance", {
+          employeeId: leaveRequest.employeeId,
+          date: dateStr,
+          status: "leave"
+        });
+      }
+    }
+  }
+}
+
 export const approveLeave = mutation({
   args: {
     leaveId: v.id("leaveRequests"),
     status: v.union(v.literal("approved"), v.literal("rejected")),
     comments: v.optional(v.string())
-=======
-export const approveLeaveRequest = mutation({
-  args: {
-    requestId: v.id("leaveRequests"),
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
   },
   handler: async (ctx, args) => {
-    const currentEmployee = await ctx.runQuery(api.employees.getCurrentEmployee);
-    if (!currentEmployee || currentEmployee.role === "employee") {
-      throw new Error("Access denied");
-    }
-
-<<<<<<< HEAD
-    const leaveRequest = await ctx.db.get(args.leaveId);
-    if (!leaveRequest) throw new Error("Leave request not found");
-
-    await ctx.db.patch(args.leaveId, {
-      status: args.status,
-      approvedBy: currentEmployee._id,
-      approvalComments: args.comments
-=======
-    const leaveRequest = await ctx.db.get(args.requestId);
-    if (!leaveRequest) throw new Error("Leave request not found");
-
-    await ctx.db.patch(args.requestId, {
-      status: "approved",
-      approvedBy: currentEmployee._id,
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
-    });
-
-    // Create notification for employee
-    const employee = await ctx.db.get(leaveRequest.employeeId);
-    if (employee) {
-      await ctx.db.insert("notifications", {
-        recipientId: employee._id,
-<<<<<<< HEAD
-        title: `Leave Request ${args.status}`,
-        message: `Your ${leaveRequest.leaveType} leave request from ${leaveRequest.startDate} to ${leaveRequest.endDate} has been ${args.status}${args.comments ? `. Comments: ${args.comments}` : ''}`,
-        type: args.status === "approved" ? "leave_approved" : "leave_rejected",
-=======
-        title: "Leave Request Approved",
-        message: `Your ${leaveRequest.leaveType} leave request from ${leaveRequest.startDate} to ${leaveRequest.endDate} has been approved`,
-        type: "leave_approved",
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
-        read: false,
-        createdAt: Date.now()
-      });
-    }
-
-<<<<<<< HEAD
-    // If approved, mark attendance as leave for those dates
-    if (args.status === "approved") {
-      const startDate = new Date(leaveRequest.startDate);
-      const endDate = new Date(leaveRequest.endDate);
-      
-      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-        const dateStr = d.toISOString().split('T')[0];
-        
-        const existing = await ctx.db
-          .query("attendance")
-          .withIndex("by_employee_and_date", (q: any) => 
-            q.eq("employeeId", leaveRequest.employeeId).eq("date", dateStr)
-          )
-          .unique();
-
-        if (existing) {
-          await ctx.db.patch(existing._id, { status: "leave" });
-        } else {
-          await ctx.db.insert("attendance", {
-            employeeId: leaveRequest.employeeId,
-            date: dateStr,
-            status: "leave"
-          });
-        }
-      }
-    }
-=======
-    return args.requestId;
+    return await processLeaveApproval(ctx, args);
   },
 });
 
-export const rejectLeaveRequest = mutation({
-  args: {
-    requestId: v.id("leaveRequests"),
-  },
+export const approveLeaveRequest = mutation({
+  args: { requestId: v.id("leaveRequests") },
   handler: async (ctx, args) => {
-    const currentEmployee = await ctx.runQuery(api.employees.getCurrentEmployee);
-    if (!currentEmployee || currentEmployee.role === "employee") {
-      throw new Error("Access denied");
-    }
-
-    const leaveRequest = await ctx.db.get(args.requestId);
-    if (!leaveRequest) throw new Error("Leave request not found");
-
-    await ctx.db.patch(args.requestId, {
-      status: "rejected",
-      approvedBy: currentEmployee._id,
+    return await processLeaveApproval(ctx, {
+      leaveId: args.requestId,
+      status: "approved"
     });
+  }
+});
 
-    // Create notification for employee
-    const employee = await ctx.db.get(leaveRequest.employeeId);
-    if (employee) {
-      await ctx.db.insert("notifications", {
-        recipientId: employee._id,
-        title: "Leave Request Rejected",
-        message: `Your ${leaveRequest.leaveType} leave request from ${leaveRequest.startDate} to ${leaveRequest.endDate} has been rejected`,
-        type: "leave_rejected",
-        read: false,
-        createdAt: Date.now()
-      });
-    }
-
-    return args.requestId;
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
+export const rejectLeaveRequest = mutation({
+  args: { requestId: v.id("leaveRequests") },
+  handler: async (ctx, args) => {
+    return await processLeaveApproval(ctx, {
+      leaveId: args.requestId,
+      status: "rejected"
+    });
   },
+});
+
+export const createTimeOffRequest = applyLeave;
+export const approveTimeOffRequest = approveLeaveRequest;
+export const rejectTimeOffRequest = rejectLeaveRequest;
+
+export const generateUploadUrl = mutation(async (ctx) => {
+  return await ctx.storage.generateUploadUrl();
 });

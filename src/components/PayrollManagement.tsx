@@ -19,30 +19,17 @@ export function PayrollManagement() {
   const [loading, setLoading] = useState(false);
 
   const employees = useQuery(api.employees.getAllEmployees);
-<<<<<<< HEAD
   const payrollRecords = useQuery(api.payroll.getAllPayroll, {
     payPeriod: selectedPeriod
-=======
-  const payrollRecords = useQuery(api.payroll.getAllPayroll, { 
-    payPeriod: selectedPeriod 
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
   });
 
   const createPayroll = useMutation(api.payroll.createPayroll);
   const updatePayrollStatus = useMutation(api.payroll.updatePayrollStatus);
-<<<<<<< HEAD
   const generateBatch = useMutation(api.payroll.generateBatchPayroll);
-=======
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
     try {
       await createPayroll({
         employeeId: formData.employeeId as any,
@@ -68,14 +55,13 @@ export function PayrollManagement() {
     }
   };
 
-<<<<<<< HEAD
   const handleGenerateBatch = async () => {
     if (!confirm(`Generate payroll records for all active employees for ${selectedPeriod}?`)) return;
 
     setLoading(true);
     try {
-      const result = await generateBatch({ payPeriod: selectedPeriod });
-      toast.success(`Successfully generated ${result.count} payroll records!`);
+      const result = (await generateBatch({ payPeriod: selectedPeriod })) as any;
+      toast.success(`Successfully generated ${result.count || 0} payroll records!`);
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -83,8 +69,6 @@ export function PayrollManagement() {
     }
   };
 
-=======
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
   const handleStatusUpdate = async (payrollId: string, status: "draft" | "processed" | "paid") => {
     try {
       await updatePayrollStatus({ payrollId: payrollId as any, status });
@@ -104,11 +88,7 @@ export function PayrollManagement() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-blue-500/20 rounded-lg p-4 border border-blue-500/30">
           <p className="text-blue-300 text-sm font-medium">Total Payroll</p>
-<<<<<<< HEAD
           <p className="text-white text-2xl font-bold">₹{totalPayroll.toLocaleString('en-IN')}</p>
-=======
-          <p className="text-white text-2xl font-bold">${totalPayroll.toLocaleString()}</p>
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
         </div>
 
         <div className="bg-purple-500/20 rounded-lg p-4 border border-purple-500/30">
@@ -144,7 +124,6 @@ export function PayrollManagement() {
               />
             </div>
           </div>
-<<<<<<< HEAD
 
           <div className="flex items-center gap-3">
             <button
@@ -161,15 +140,6 @@ export function PayrollManagement() {
               {showForm ? "Cancel" : "Add Payroll"}
             </button>
           </div>
-=======
-          
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-lg font-medium hover:from-green-600 hover:to-emerald-600 transition-all duration-200"
-          >
-            {showForm ? "Cancel" : "Add Payroll"}
-          </button>
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
         </div>
 
         {showForm && (
@@ -266,76 +236,45 @@ export function PayrollManagement() {
                   <h4 className="text-white font-semibold text-lg mb-2">
                     {record.employee?.firstName} {record.employee?.lastName}
                   </h4>
-<<<<<<< HEAD
 
-=======
-                  
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                     <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
                       <p className="text-green-300 text-sm font-medium">Base Salary</p>
                       <p className="text-white text-lg font-semibold">
-<<<<<<< HEAD
                         ₹{record.baseSalary.toLocaleString('en-IN')}
-=======
-                        ${record.baseSalary.toLocaleString()}
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                       </p>
                     </div>
 
                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
                       <p className="text-blue-300 text-sm font-medium">Allowances</p>
                       <p className="text-white text-lg font-semibold">
-<<<<<<< HEAD
                         +₹{record.allowances.toLocaleString('en-IN')}
-=======
-                        +${record.allowances.toLocaleString()}
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                       </p>
                     </div>
 
                     <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
                       <p className="text-red-300 text-sm font-medium">Deductions</p>
                       <p className="text-white text-lg font-semibold">
-<<<<<<< HEAD
                         -₹{record.deductions.toLocaleString('en-IN')}
-=======
-                        -${record.deductions.toLocaleString()}
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                       </p>
                     </div>
 
                     <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3">
                       <p className="text-purple-300 text-sm font-medium">Net Salary</p>
                       <p className="text-white text-xl font-bold">
-<<<<<<< HEAD
                         ₹{record.netSalary.toLocaleString('en-IN')}
-=======
-                        ${record.netSalary.toLocaleString()}
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-4">
-<<<<<<< HEAD
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${record.status === "paid" ? "bg-green-500/20 text-green-300" :
-                      record.status === "processed" ? "bg-blue-500/20 text-blue-300" :
-                        "bg-yellow-500/20 text-yellow-300"
+                        record.status === "processed" ? "bg-blue-500/20 text-blue-300" :
+                          "bg-yellow-500/20 text-yellow-300"
                       }`}>
                       {record.status}
                     </span>
 
-=======
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      record.status === "paid" ? "bg-green-500/20 text-green-300" :
-                      record.status === "processed" ? "bg-blue-500/20 text-blue-300" :
-                      "bg-yellow-500/20 text-yellow-300"
-                    }`}>
-                      {record.status}
-                    </span>
-                    
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                     {record.payDate && (
                       <span className="text-slate-300 text-sm">
                         Pay Date: {record.payDate}
@@ -353,11 +292,7 @@ export function PayrollManagement() {
                       Process
                     </button>
                   )}
-<<<<<<< HEAD
 
-=======
-                  
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
                   {record.status === "processed" && (
                     <button
                       onClick={() => handleStatusUpdate(record._id, "paid")}

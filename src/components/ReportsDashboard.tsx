@@ -2,14 +2,14 @@ import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileText, Calendar, Download, Printer, ChevronRight, X } from "lucide-react";
+import { FileText, Calendar, Download, Printer, ChevronRight, X, ArrowRight, Mail } from "lucide-react";
 import { SalarySlip } from "./SalarySlip";
 
 export function ReportsDashboard() {
     const [activeView, setActiveView] = useState<"menu" | "salary" | "attendance">("menu");
 
     return (
-        <div className="min-h-[600px] relative">
+        <div className="min-h-[600px] relative pb-20">
             <AnimatePresence mode="wait">
                 {activeView === "menu" && (
                     <ReportsMenu onSelect={setActiveView} key="menu" />
@@ -26,172 +26,199 @@ export function ReportsDashboard() {
 }
 
 function ReportsMenu({ onSelect }: { onSelect: (view: "salary" | "attendance") => void }) {
-    const cards = [
-        {
-            id: "salary",
-            title: "Salary Slips",
-            desc: "Generate and download monthly payslips for all employees.",
-            icon: <FileText size={40} />,
-            gradient: "from-zinc-800 to-black"
-        },
-        {
-            id: "attendance",
-            title: "Attendance Register",
-            desc: "Export detailed attendance logs and summary reports.",
-            icon: <Calendar size={40} />,
-            gradient: "from-zinc-800 to-black"
-        }
-    ];
+    return (
+        <div className="max-w-5xl mx-auto py-12 px-6">
+            <div className="text-center mb-16">
+                <h2 className="text-4xl font-black text-white tracking-tight mb-4 text-gradient-workflow">Financial Intelligence</h2>
+                <p className="text-gray-500 max-w-xl mx-auto">Generate detailed payroll insights and compliance reports with one click.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <ReportCard
+                    title="Salary Distribution"
+                    desc="Process monthly payroll, generate slips, and track historical disbursements."
+                    icon={<FileText size={32} />}
+                    onClick={() => onSelect("salary")}
+                    color="cyan"
+                />
+                <ReportCard
+                    title="Attendance Registry"
+                    desc="Overview of employee presence, leave trends, and punctuality scoring."
+                    icon={<Calendar size={32} />}
+                    onClick={() => onSelect("attendance")}
+                    color="purple"
+                />
+            </div>
+        </div>
+    );
+}
+
+function ReportCard({ title, desc, icon, onClick, color }: { title: string, desc: string, icon: any, onClick: () => void, color: 'cyan' | 'purple' }) {
+    const colors = {
+        cyan: 'from-cyan-500/10 to-transparent border-cyan-500/20 group-hover:border-cyan-500/40 text-cyan-400',
+        purple: 'from-purple-500/10 to-transparent border-purple-500/20 group-hover:border-purple-500/40 text-purple-400'
+    }
 
     return (
         <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8 h-full place-items-center py-10"
+            whileHover={{ y: -5 }}
+            onClick={onClick}
+            className={`group cursor-pointer p-10 rounded-[40px] border bg-gradient-to-br transition-all duration-500 ${colors[color]}`}
         >
-            {cards.map((card, i) => (
-                <motion.div
-                    key={card.id}
-                    initial={{ y: 50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: i * 0.1, type: "spring", stiffness: 100 }}
-                    whileHover={{ y: -10, scale: 1.05 }}
-                    onClick={() => onSelect(card.id as any)}
-                    className="group cursor-pointer relative w-full max-w-sm aspect-[4/5] perspective-1000"
-                >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} rounded-3xl border border-white/10 shadow-2xl transition-all duration-500 group-hover:shadow-glow group-hover:border-white/30 overflow-hidden`}>
-
-                        {/* 3D Content Container */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-black/20 backdrop-blur-sm group-hover:backdrop-blur-none transition-all">
-                            <div className="mb-6 p-6 rounded-2xl bg-white/5 border border-white/10 group-hover:bg-cyan-500/20 group-hover:border-cyan-500/40 transition-colors shadow-inner">
-                                <div className="text-white group-hover:text-cyan-400 transition-colors">
-                                    {card.icon}
-                                </div>
-                            </div>
-
-                            <h3 className="text-3xl font-bold text-white mb-4 tracking-tighter">{card.title}</h3>
-                            <p className="text-silver-dark mb-8 leading-relaxed">{card.desc}</p>
-
-                            <div className="flex items-center gap-2 text-sm font-bold text-white opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
-                                OPEN DASHBOARD <ChevronRight size={16} />
-                            </div>
-                        </div>
-
-                        {/* Decorative Noise */}
-                        <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none"></div>
-                    </div>
-                </motion.div>
-            ))}
+            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-8 border border-white/10 group-hover:scale-110 transition-transform duration-500">
+                {icon}
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-4">{title}</h3>
+            <p className="text-gray-500 leading-relaxed text-sm mb-8">{desc}</p>
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 translate-x-[-10px] group-hover:translate-x-0 transition-all duration-500">
+                Launch Explorer <ArrowRight size={14} />
+            </div>
         </motion.div>
-    );
+    )
 }
 
 function SalaryReports({ onBack }: { onBack: () => void }) {
     const [selectedPeriod, setSelectedPeriod] = useState(new Date().toISOString().slice(0, 7));
+    const [searchTerm, setSearchTerm] = useState("");
     const payrolls = useQuery(api.payroll.getAllPayroll, { payPeriod: selectedPeriod });
     const [selectedSlip, setSelectedSlip] = useState<any>(null);
 
+    const filteredPayrolls = payrolls?.filter(p =>
+        p.employee?.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.employee?.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.employee?.employeeId.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <button onClick={onBack} className="flex items-center gap-2 text-silver-dark hover:text-white transition-colors">
-                    <ChevronRight className="rotate-180" size={20} /> Back to Reports
+        <div className="space-y-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <button onClick={onBack} className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                    <ChevronRight className="rotate-180" size={18} /> BACK
                 </button>
-                <div className="flex items-center gap-4">
-                    <span className="text-silver-dark font-mono text-sm">SELECT PERIOD</span>
+
+                <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                        <input
+                            type="text"
+                            placeholder="Search employee..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full bg-[#0A0A0A] border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-sm text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                        />
+                    </div>
                     <input
                         type="month"
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value)}
-                        className="bg-black/50 border border-white/20 rounded-lg px-4 py-2 text-white outline-none focus:border-cyan-500/50 transition-colors"
+                        className="bg-[#0A0A0A] border border-white/10 rounded-2xl px-4 py-3 text-sm text-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
                     />
                 </div>
             </div>
 
-            <div className="glass-card rounded-2xl p-6 min-h-[500px]">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                    <FileText className="text-cyan-dim" />
-                    Salary Slips for {selectedPeriod}
-                </h2>
+            <div className="bg-[#0A0A0A] rounded-[32px] p-8 border border-white/5">
+                <div className="flex justify-between items-center mb-8">
+                    <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                        Payroll Ledger <span className="text-gray-600 text-sm font-normal">({selectedPeriod})</span>
+                    </h2>
+                    <div className="flex gap-2">
+                        <button className="p-2 bg-white/5 rounded-xl border border-white/10 text-gray-400 hover:text-white"><Printer size={18} /></button>
+                        <button className="p-2 bg-white/5 rounded-xl border border-white/10 text-gray-400 hover:text-white"><Download size={18} /></button>
+                    </div>
+                </div>
 
-                <div className="space-y-2">
-                    {payrolls?.map((payroll, i) => (
-                        <motion.div
-                            key={payroll._id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.05 }}
-                            className="flex justify-between items-center p-4 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 hover:border-white/20 transition-all group"
-                        >
+                <div className="space-y-3">
+                    {filteredPayrolls?.map((payroll) => (
+                        <div key={payroll._id} className="flex flex-wrap justify-between items-center p-5 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.04] hover:border-white/10 transition-all group">
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white font-bold border border-white/10">
-                                    {payroll.employee?.firstName.charAt(0)}
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center text-cyan-400 font-black border border-white/5">
+                                    {payroll.employee?.firstName[0]}
                                 </div>
                                 <div>
-                                    <p className="text-white font-semibold text-lg">{payroll.employee?.firstName} {payroll.employee?.lastName}</p>
-                                    <p className="text-silver-dark text-xs uppercase tracking-wider">{payroll.employee?.role} • {payroll.employee?.employeeId}</p>
+                                    <p className="text-white font-bold">{payroll.employee?.firstName} {payroll.employee?.lastName}</p>
+                                    <p className="text-gray-500 text-xs font-mono">{payroll.employee?.employeeId}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-8 py-2 md:py-0">
                                 <div className="text-right">
-<<<<<<< HEAD
-                                    <p className="text-white font-mono font-bold">₹{payroll.netSalary.toLocaleString('en-IN')}</p>
-=======
-                                    <p className="text-white font-mono font-bold">${payroll.netSalary.toLocaleString()}</p>
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
-                                    <p className="text-[10px] text-emerald-400 bg-emerald-400/10 px-2 rounded-full inline-block mt-1">{payroll.status}</p>
+                                    <p className="text-white font-black text-lg">₹{payroll.netSalary.toLocaleString('en-IN')}</p>
+                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${payroll.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                        {payroll.status}
+                                    </span>
                                 </div>
 
                                 <button
                                     onClick={() => setSelectedSlip({ payroll, employee: payroll.employee })}
-                                    className="p-2 rounded-full bg-white text-black hover:scale-110 active:scale-95 transition-all shadow-glow"
+                                    className="p-3 bg-white text-black rounded-2xl hover:scale-110 active:scale-95 transition-all shadow-xl"
                                 >
                                     <Printer size={18} />
                                 </button>
                             </div>
-                        </motion.div>
+                        </div>
                     ))}
-                    {payrolls?.length === 0 && <p className="text-center text-silver-dark py-20">No payroll records found for this period.</p>}
+
+                    {filteredPayrolls?.length === 0 && (
+                        <div className="py-24 text-center">
+                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <FileText size={32} className="text-gray-700" />
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">No records found</h3>
+                            <p className="text-gray-500">Try adjusting your search or selecting a different period.</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Modal for Print */}
-            {selectedSlip && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="bg-white rounded-xl overflow-hidden max-h-[90vh] overflow-y-auto max-w-4xl w-full relative"
-                    >
-                        <button onClick={() => setSelectedSlip(null)} className="absolute top-4 right-4 text-black hover:bg-gray-100 p-2 rounded-full z-10">
-                            <X size={24} />
-                        </button>
-                        <div className="p-8">
-                            <SalarySlip payroll={selectedSlip.payroll} employee={selectedSlip.employee} />
-                        </div>
-                    </motion.div>
-                </div>
-            )}
+            <AnimatePresence>
+                {selectedSlip && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setSelectedSlip(null)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+                        ></motion.div>
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-[40px] overflow-hidden max-h-[90vh] overflow-y-auto max-w-4xl w-full relative z-[110] shadow-2xl"
+                        >
+                            <button onClick={() => setSelectedSlip(null)} className="absolute top-6 right-6 bg-black/5 hover:bg-black/10 p-3 rounded-2xl text-black transition-colors z-[120]">
+                                <X size={24} />
+                            </button>
+                            <div className="p-12">
+                                <SalarySlip payroll={selectedSlip.payroll} employee={selectedSlip.employee} />
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
 
 function AttendanceReports({ onBack }: { onBack: () => void }) {
-    // Placeholder for future expansion
     return (
         <div className="space-y-6">
-            <button onClick={onBack} className="flex items-center gap-2 text-silver-dark hover:text-white transition-colors">
-                <ChevronRight className="rotate-180" size={20} /> Back to Reports
+            <button onClick={onBack} className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-gray-400 hover:text-white transition-all">
+                <ChevronRight className="rotate-180" size={18} /> BACK
             </button>
-            <div className="glass-card rounded-2xl p-12 text-center border-dashed border-2 border-white/20">
-                <Calendar size={48} className="mx-auto text-silver-dark mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">Attendance Reports</h3>
-                <p className="text-silver-dark">Detailed attendance logs export works exactly like Salary Slips.</p>
-                <div className="mt-8 flex justify-center gap-4">
-                    <button className="premium-btn flex items-center gap-2">
-                        <Download size={18} /> Export CSV
+            <div className="bg-[#0A0A0A] rounded-[40px] p-20 text-center border-dashed border-2 border-white/5 overflow-hidden relative">
+                <div className="absolute -top-24 -left-24 w-64 h-64 bg-purple-500/10 blur-[100px] rounded-full"></div>
+                <div className="relative z-10">
+                    <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-white/10">
+                        <Calendar size={40} className="text-purple-400" />
+                    </div>
+                    <h3 className="text-3xl font-black text-white mb-4">Registry Module Unlocked</h3>
+                    <p className="text-gray-500 max-w-md mx-auto mb-10 leading-relaxed">
+                        Attendance summaries, heatmaps, and audit logs are being processed. This module will integrate with the biometric server shortly.
+                    </p>
+                    <button className="bg-white text-black px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95 shadow-2xl">
+                        Schedule Integration
                     </button>
                 </div>
             </div>

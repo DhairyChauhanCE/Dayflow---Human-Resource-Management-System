@@ -79,21 +79,6 @@ export const createPayroll = mutation({
     deductions: v.number(),
     payPeriod: v.string(),
     payDate: v.optional(v.string()),
-<<<<<<< HEAD
-    breakdown: v.optional(v.object({
-      basic: v.number(),
-      hra: v.number(),
-      standardAllowance: v.number(), // New
-      performanceBonus: v.number(), // New
-      lta: v.number(), // New
-      fixedAllowance: v.number(), // New
-      conveyance: v.optional(v.number()),
-      special: v.optional(v.number()),
-      tax: v.number(),
-      pfEmployee: v.number(), // Employee Share
-      pfEmployer: v.number(), // Employer Share
-      professionalTax: v.number(), // New
-=======
 
     // Configurable inputs
     monthWage: v.optional(v.number()),
@@ -107,15 +92,12 @@ export const createPayroll = mutation({
       performanceBonus: v.optional(v.number()),
       lta: v.optional(v.number()),
       fixedAllowance: v.optional(v.number()),
-
-      pfEmployee: v.optional(v.number()),
-      pfEmployer: v.optional(v.number()),
-      tax: v.number(),
-
-      // Legacy support
       conveyance: v.optional(v.number()),
       special: v.optional(v.number()),
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
+      tax: v.number(),
+      pfEmployee: v.number(),
+      pfEmployer: v.number(),
+      professionalTax: v.optional(v.number()),
     }))
   },
   handler: async (ctx, args) => {
@@ -134,14 +116,19 @@ export const createPayroll = mutation({
       .unique();
 
     if (existing) {
-<<<<<<< HEAD
-      throw new Error("Payroll already exists for this period");
+      // Update existing record
+      const { employeeId, ...updates } = args;
+      await ctx.db.patch(existing._id, {
+        ...updates,
+        netSalary,
+        status: existing.status // keep existing status
+      });
+      return existing._id;
     }
 
-    // Use provided breakdown or calculate default (Simplified fallback)
+    // Use provided breakdown or calculate default
     let breakdown = args.breakdown;
     if (!breakdown) {
-      // Simplified Auto-calculation fallback if breakdown not provided
       breakdown = {
         basic: Math.round(args.baseSalary * 0.4),
         hra: Math.round(args.baseSalary * 0.2),
@@ -155,37 +142,6 @@ export const createPayroll = mutation({
         pfEmployee: Math.round(args.deductions * 0.25),
         pfEmployer: Math.round(args.deductions * 0.25),
         professionalTax: 200
-=======
-      // For now, allow overwriting or patching could be better, but let's throw or return existing
-      // Actually, let's delete existing and create new (overwrite logic) or throw
-      // The current logic throws. Let's keep it but perhaps update if exists logic is better.
-      // For simplified flow, we'll strip the existing check or use update logic.
-      // Let's stick effectively to "update if exists" logic by deleting old one? 
-      // No, let's just update the existing record if found, or insert if not.
-
-      const { employeeId, ...updates } = args;
-      await ctx.db.patch(existing._id, {
-        ...updates,
-        netSalary,
-        status: existing.status // keep existing status
-      });
-      return existing._id;
-    }
-
-    let breakdown = args.breakdown;
-    // Default fallback logic
-    if (!breakdown) {
-      breakdown = {
-        basic: Math.round(args.baseSalary * 0.5),
-        hra: Math.round(args.baseSalary * 0.3),
-        standardAllowance: 0,
-        performanceBonus: 0,
-        lta: 0,
-        fixedAllowance: 0,
-        pfEmployee: Math.round(args.deductions * 0.3),
-        pfEmployer: 0,
-        tax: Math.round(args.deductions * 0.7),
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
       };
     }
 
@@ -197,12 +153,9 @@ export const createPayroll = mutation({
       netSalary,
       payPeriod: args.payPeriod,
       payDate: args.payDate,
-<<<<<<< HEAD
-=======
       monthWage: args.monthWage,
       workingDaysPerWeek: args.workingDaysPerWeek,
       breakTime: args.breakTime,
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
       breakdown,
       status: "draft"
     });
@@ -211,18 +164,10 @@ export const createPayroll = mutation({
   },
 });
 
-<<<<<<< HEAD
 export const updatePayrollStatus = mutation({
   args: {
     payrollId: v.id("payroll"),
     status: v.union(v.literal("draft"), v.literal("processed"), v.literal("paid"))
-=======
-export const calculatePayableDays = mutation({
-  args: {
-    employeeId: v.union(v.id("employees"), v.literal("all")),
-    month: v.number(),
-    year: v.number()
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
   },
   handler: async (ctx, args) => {
     const currentEmployee = await ctx.runQuery(api.employees.getCurrentEmployee);
@@ -230,7 +175,6 @@ export const calculatePayableDays = mutation({
       throw new Error("Access denied");
     }
 
-<<<<<<< HEAD
     await ctx.db.patch(args.payrollId, { status: args.status });
 
     // If status is processed or paid, notify employee
@@ -277,8 +221,8 @@ export const generateBatchPayroll = mutation({
       if (!employee.salaryDetails) continue;
 
       const { monthWage, breakdown: empBreakdown } = employee.salaryDetails;
-      const totalAllowances = empBreakdown.hra + empBreakdown.standardAllowance + empBreakdown.performanceBonus + empBreakdown.lta + empBreakdown.fixedAllowance;
-      const totalDeductions = empBreakdown.pfEmployee + empBreakdown.professionalTax;
+      const totalAllowances = empBreakdown.hra + (empBreakdown.standardAllowance || 0) + (empBreakdown.performanceBonus || 0) + (empBreakdown.lta || 0) + (empBreakdown.fixedAllowance || 0);
+      const totalDeductions = empBreakdown.pfEmployee + (empBreakdown.professionalTax || 0);
 
       await ctx.db.insert("payroll", {
         employeeId: employee._id,
@@ -290,13 +234,13 @@ export const generateBatchPayroll = mutation({
         breakdown: {
           basic: empBreakdown.basic,
           hra: empBreakdown.hra,
-          standardAllowance: empBreakdown.standardAllowance,
-          performanceBonus: empBreakdown.performanceBonus,
-          lta: empBreakdown.lta,
-          fixedAllowance: empBreakdown.fixedAllowance,
+          standardAllowance: empBreakdown.standardAllowance || 0,
+          performanceBonus: empBreakdown.performanceBonus || 0,
+          lta: empBreakdown.lta || 0,
+          fixedAllowance: empBreakdown.fixedAllowance || 0,
           pfEmployee: empBreakdown.pfEmployee,
           pfEmployer: empBreakdown.pfEmployer,
-          professionalTax: empBreakdown.professionalTax,
+          professionalTax: empBreakdown.professionalTax || 0,
           tax: 0, // Default for now
         },
         status: "draft"
@@ -305,15 +249,29 @@ export const generateBatchPayroll = mutation({
     }
 
     return { count };
-=======
+  },
+});
+
+export const calculatePayableDays = mutation({
+  args: {
+    employeeId: v.union(v.id("employees"), v.literal("all")),
+    month: v.number(),
+    year: v.number()
+  },
+  handler: async (ctx, args) => {
+    const currentEmployee = await ctx.runQuery(api.employees.getCurrentEmployee);
+    if (!currentEmployee || currentEmployee.role === "employee") {
+      throw new Error("Access denied");
+    }
+
     const startDate = new Date(args.year, args.month - 1, 1);
     const endDate = new Date(args.year, args.month, 0); // Last day of month
-    
+
     // Get days in month
     const daysInMonth = new Date(args.year, args.month, 0).getDate();
-    
+
     let employeesToProcess;
-    
+
     if (args.employeeId === "all") {
       // Get all employees
       employeesToProcess = await ctx.db.query("employees").collect();
@@ -328,10 +286,10 @@ export const generateBatchPayroll = mutation({
         // Get attendance records for the month
         const attendanceRecords = await ctx.db
           .query("attendance")
-          .withIndex("by_employee_date", (q: any) => 
+          .withIndex("by_employee_and_date", (q: any) =>
             q.eq("employeeId", employee._id)
-             .gte("date", startDate.toISOString().split('T')[0])
-             .lt("date", endDate.toISOString().split('T')[0])
+              .gte("date", startDate.toISOString().split('T')[0])
+              .lt("date", endDate.toISOString().split('T')[0])
           )
           .collect();
 
@@ -360,7 +318,7 @@ export const generateBatchPayroll = mutation({
           payableDays,
           absentDays,
           unpaidLeaveDays,
-          paidLeaveDays: attendanceRecords.filter((r: any) => 
+          paidLeaveDays: attendanceRecords.filter((r: any) =>
             r.status === "on_leave" && r.leaveType !== "unpaid"
           ).length
         };
@@ -368,6 +326,6 @@ export const generateBatchPayroll = mutation({
     );
 
     return results;
->>>>>>> fb47843803ad43db6f563f5bcadbbb6a3fe8f596
   },
 });
+
